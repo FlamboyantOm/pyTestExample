@@ -1,0 +1,8 @@
+18:39:26,960.6692790985107 373   get_release_status  INFO Start.
+18:39:26,965.7948017120361 382   get_release_status  INFO returning - error_code : 0 status : 1 vdb : 2016-09-30 11:11:11
+18:39:28,29.48284149169922 112                 main  INFO Start.
+18:39:28,33.49637985229492 129                 main  INFO Connection established! host '10.10.3.176', user 'manoj', database 'jenkins'
+18:39:28,34.487247467041016  37 RetrieveToBeReleasePkgListInternal  INFO Start.
+18:39:28,35.48741340637207  78 RetrieveToBeReleasePkgListInternal  INFO Exit.
+18:39:28,36.48972511291504 145                 main  INFO pkg_list = ['pkg_160919200926057_387_5208.zip']
+18:39:28,36.48972511291504 153                 main  INFO Exit.

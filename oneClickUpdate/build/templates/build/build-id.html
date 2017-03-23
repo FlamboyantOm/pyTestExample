@@ -1,0 +1,91 @@
+{% extends "build/base.html" %}
+{% block content %}
+<div >
+{% load staticfiles %}
+  {% if messages %}
+	<div class="row"><div class="col-lg-12"> {% for msg in messages %}<div class="alert alert-{{msg.level_tag}}" role="alert"> <a href="#" class="close" data-dismiss="alert">&times;</a> {{msg.message|safe}} </div>{% endfor %}</div></div>
+  {% endif %}
+  <div id="getBuildIdDetails"> {{data.content|safe}} </div>
+</div>
+{% url 'build:patch_file_details_ajax' as patch_file_details_ajax_url %}
+<script>
+var selectedJobId = '{{data.selectedJobId}}'; var JobStatus = '{{data.JobStatus}}'; var updateIDArr = '{{updateIDArr}}';
+function admSelectCheck(nameSelect){
+    var val = nameSelect.options[nameSelect.selectedIndex].value;
+	document.getElementById('myInput').value = val;
+  return true;
+}
+document.getElementById("anchorToRedirect").onclick = function(){
+	redirectTo = '/build/{{data.selectedJobId}}/';
+	if (document.getElementById('myInput').value != '')
+		redirectTo = redirectTo+'?UpdateID='+document.getElementById('myInput').value;
+    window.location.href = ''+redirectTo;
+}
+if('{{request.GET.UpdateID}}'){jQuery('html, body').animate({ scrollTop: jQuery('#updateIdDropdown{{data.type}}').offset().top }, 1000);}
+jQuery(document).ready(function() {
+var selectedJobId = '{{data.selectedJobId}}'; var JobStatus = '{{data.JobStatus}}'; var type = '{{data.type}}';
+	var updateID = "{{data.UpdateID}}"; var updateIDName = '{{data.UpdateIDName}}'
+	jQuery("#soloBuildDetails{{updateID}}Table").hide();	
+	jQuery('#soloBuildDetails{{updateID}}Table').on('shown.bs.collapse', function () { jQuery("#soloBuildDetails{{updateID}}Table").show(); jQuery('html, body').animate({ scrollTop: jQuery("#soloBuildDetails{{updateID}}Table").offset().top-60  }, 500);  jQuery("#soloBuildDetails{{updateID}}Target").html('Hide Table'); });
+	jQuery('#soloBuildDetails{{updateID}}Table').on('hidden.bs.collapse', function () { jQuery("#soloBuildDetails{{updateID}}Table").hide();  jQuery("#soloBuildDetails{{updateID}}Target").html('Show Table'); $(".soloBuildDetailsDiv").hasClass('glyphicon glyphicon-plus').addClass( 'glyphicon glyphicon-minus'); });
+  	jQuery('#soloBuildDetails'+updateID).DataTable( {
+        "processing": true, "serverSide": true, "order": [[ 0, "desc" ]], "fixedColumns": true, "bFilter": false, "ajax": { "url": "/build-solo-details/ajax/", dataType: 'json', async: true, headers: { 'X-Requested-With': 'XMLHttpRequest' }, data: {csrfmiddlewaretoken: '{{ csrf_token }}', "selectedJobId" : selectedJobId,"updateID":updateID,"type":type,'updateIDName':updateIDName}, "dataSrc": function ( json ) {if(json.data.length === 0){ jQuery( "#soloBuildDetailsDiv" ).html( "<strong>No data available for solo Job Details</strong>" ); } /*getSoloData(json.data);*/ return json.data;}  },
+		"language": {"processing": "<div class='processing'> Processing ...</div>" },
+		"columns": [{ "data": "DefID" },{ "data": "DefSize" }, { "data": "FileState" },{ "data": "FileSize" },{ "data": "FileName" },{ "data": "FileMD5" , "orderable" : false}],
+	});
+//DiffDetails ajax
+	jQuery("#buildDiffDetails{{updateID}}Table").hide();
+	jQuery('#buildDiffDetails{{updateID}}Table').on('shown.bs.collapse', function () { jQuery("#buildDiffDetails{{updateID}}Table").show(); jQuery('html, body').animate({ scrollTop: jQuery("#buildDiffDetails{{updateID}}Table").offset().top-60 }, 500); jQuery("#buildDiffDetails{{updateID}}Target").html('Hide Table');  });
+	jQuery('#buildDiffDetails{{updateID}}Table').on('hidden.bs.collapse', function (){ jQuery("#buildDiffDetails{{updateID}}Table").hide();  jQuery("#buildDiffDetails{{updateID}}Target").html('Show Table');  $(".buildDiffDetails").hasClass('glyphicon glyphicon-plus').addClass( 'glyphicon glyphicon-minus');});
+	jQuery('#buildDiffDetails'+updateID).DataTable( {
+        "processing": true,"serverSide": true,"order": [[ 0, "desc" ]],"fixedColumns": true,"bFilter": false,
+		"ajax": { "url": "/build-diff-details/ajax/", dataType: 'json', async: true, headers: { 'X-Requested-With': 'XMLHttpRequest' }, data: {csrfmiddlewaretoken: '{{ csrf_token }}', "selectedJobId" : selectedJobId,"updateID":updateID,"type":type,'updateIDName':updateIDName},
+		"dataSrc": function ( json ) {if(json.data.length === 0){ jQuery( "#buildDiffDetailsDiv" ).html( "<strong>No data available for Diff File details</strong>" ); }   return json.data;} },
+		"language": {"processing": "<div class='processing'> Processing ...</div>" },
+		"columns": [{ "data": "PatchFileName" },{ "data": "PatchFileMD5", "orderable" : false },{ "data": "PatchFileSize" },{ "data": "Version" },{ "data": "FromVersion" }, { "data": "FileCount" }],
+	} ); 
+ });
+jQuery('#soloBuildDetailsDiv').on('shown.bs.collapse', function () {jQuery(".soloBuildDetailsDiv").removeClass("glyphicon glyphicon-plus").addClass("glyphicon glyphicon-minus");});
+jQuery('#soloBuildDetailsDiv').on('hidden.bs.collapse', function () {jQuery(".soloBuildDetailsDiv").removeClass("glyphicon glyphicon-minus").addClass("glyphicon glyphicon-plus");});
+jQuery('#buildDiffDetailsDiv').on('shown.bs.collapse', function () {jQuery(".buildDiffDetailsDiv").removeClass("glyphicon glyphicon-plus").addClass("glyphicon glyphicon-minus");});
+jQuery('#buildDiffDetailsDiv').on('hidden.bs.collapse', function () {jQuery(".buildDiffDetailsDiv").removeClass("glyphicon glyphicon-minus").addClass("glyphicon glyphicon-plus");});
+jQuery('#build-basic-info').on('shown.bs.collapse', function () { jQuery(".build-basic-info").removeClass("glyphicon glyphicon-plus").addClass("glyphicon glyphicon-minus");});
+jQuery('#build-basic-info').on('hidden.bs.collapse', function () { jQuery(".build-basic-info").removeClass("glyphicon glyphicon-minus").addClass("glyphicon glyphicon-plus"); });
+
+function getPatchFileNameTarget(job_id,update_id,name,fromver,tover){
+		jQuery.colorbox({ innerWidth: 400, innerHeight:200,fixed: true, 
+			html: '<div class="LoadingImage"></div><div class="text-center loaderText"><h3>Loading Please Wait ...<h3></div>', 
+			escKey: false, overlayClose: false, onLoad: function(){ jQuery('#cboxClose').hide(); } 
+		});
+		jQuery.ajax({
+				type: "POST",url: '{{patch_file_details_ajax_url}}',dataType: 'json',async: true,
+				data: { csrfmiddlewaretoken: '{{ csrf_token }}', 'patchFileName': name, 'job_id':job_id,'update_id':update_id,'fromver':fromver,'tover':tover,},
+				success: function(data) {
+					htmldata = ''
+					htmldata += '<table id="patchFileTablePP" class="breadcrumb table" style="width:100%;"><thead><tr class="even"><td>Def ID</td><td>File Name</td><td>OldFileSize</td><td>NewFileSize</td><td>DiffSize</td></tr></thead><tbody>'
+					for( var key in data.data ){ htmldata += '<tr><td>'+data.data[key].DefID+'</td><td>'+data.data[key].PatchFileName+'</td><td>'+data.data[key].OldFileSize+'</td><td>'+data.data[key].NewFileSize+'</td><td>'+data.data[key].DiffSize+'</td>'}				
+					htmldata += '</tbody> <tfoot><tr class="even"><td>Def ID</td><td>File Name</td><td>OldFileSize</td><td>NewFileSize</td><td>DiffSize</td></tr></tfoot> </table>',
+					jQuery('#cboxClose').show();				
+					jQuery.colorbox({ 
+						innerWidth: 800, innerHeight:550,fixed: true, 
+						html: '<h4 class="text-center patchFileTableHeader">Details of <b>'+name+'</b><hr></h4> <div class="scroll scrollbar">'+htmldata+'</div><div class="text-center patchFileTableFotter"><hr> '+data.UpdateSizeHtml+' </div>',
+						escKey: true, overlayClose: true, onLoad: function(){ jQuery('#cboxClose').show(); } 
+					});				
+					function sortNumbersIgnoreText(a, b, high) {
+						var reg = /[+-]?((\d+(\.\d*)?)|\.\d+)([eE][+-]?[0-9]+)?/;    
+						a = a.match(reg);
+						a = a !== null ? parseFloat(a[0]) : high;
+						b = b.match(reg);
+						b = b !== null ? parseFloat(b[0]) : high;
+						return ((a < b) ? -1 : ((a > b) ? 1 : 0));    
+					}
+					jQuery.extend( jQuery.fn.dataTableExt.oSort, { "sort-numbers-ignore-text-asc": function (a, b) { return sortNumbersIgnoreText(a, b, Number.POSITIVE_INFINITY); }, "sort-numbers-ignore-text-desc": function (a, b) { return sortNumbersIgnoreText(a, b, Number.NEGATIVE_INFINITY) * -1; }
+					});						
+					var patchFileTablePP = jQuery('#patchFileTablePP').DataTable({ columnDefs: [{ type: 'sort-numbers-ignore-text', targets : 2 },{ type: 'sort-numbers-ignore-text', targets : 3 },{ type: 'sort-numbers-ignore-text', targets : 4 },], });
+					patchFileTablePP.columns().every(function() { var that = this; });						
+				}
+			});			
+	return  
+}
+</script> 
+{% endblock %}

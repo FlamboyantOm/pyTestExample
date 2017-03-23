@@ -1,0 +1,36 @@
+{% extends "build/base.html" %}
+{% block content %}
+<div>
+{% load staticfiles %}
+     <link href="{% static 'django_tables2/themes/paleblue/css/screen.css' %}" rel="stylesheet" />
+    <form type="get" action="." style="margin-bottom: 20px">
+        <p><input id="s" type="text" name="s" class="shadow-in"  placeholder="Search by Name" >
+        <button id="search_submit" type="submit" class="shadow-in" style="margin-top:-10px;color:#444;" >Submit</button></form></p>
+    </form>
+{% load django_tables2 %}
+    <div class="build-history">{% render_table table %} </div>
+</div>
+{% url 'build:e2_history_ajax' as e2_history_ajax_url %}
+<script type="text/javascript">
+function getPipeline(response = false) {
+    if (response == true) {
+        jQuery.ajax({
+            type: "POST",
+            url: '{{e2_history_ajax_url}}',
+            dataType: 'json',
+            async: true,
+            data: {
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+                'data': 'test'
+            },
+            success: function(res) {
+                jQuery('#pipeline').html(res.data);
+                setTimeout(function() {
+                    getPipeline(true);
+                }, 2000);
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

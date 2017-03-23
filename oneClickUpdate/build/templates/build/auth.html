@@ -1,0 +1,21 @@
+{% extends "build/base.html" %}
+{% block content %}
+
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<style>
+body{
+	font-family:Arial,Helvetica,sans-serif;
+	font-size: 12px;
+}
+</style>
+<div class="shadow-in login-form" style="width:36%; margin:10% 0% 0% 35%; font-size:14px; text-align:center;">
+	<div  class="navbar-inverse shadow-in login-form"  style="margin-bottom:10px; font-size:18px;padding:10px;">{{ state }} </div>
+	<form action="/login/" method="post" class="login-form-content ">
+		{% csrf_token %}
+		<input type="hidden" name="next" value="{{ request.GET.next }}" />
+		<p><label for="username">Username: </label> <input type="text" id="username"  name="username" value="{{ username}}" /></p>
+		<p><label for="password">Password: </label> <input type="password" id="password" name="password" value="" /></p>
+		<p><input type="submit" class="navbar-inverse shadow-in login-form" style="padding:6px;" id="submit" value="Log In" /></p>
+	</form>
+</div>
+{% endblock %} 

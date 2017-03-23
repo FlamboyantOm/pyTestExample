@@ -1,0 +1,37 @@
+<ol class="breadcrumb dashboard-height">
+	<li class="float-left">
+	<label class="float-left">	<i class="fa fa-dashboard text-left"></i> Dashboard</label> 
+	</li>
+	<li class="float-right">
+		<label for="state_dateRange">Update ID:&nbsp;</label>  {{data.updateIdDropdown|safe}} 
+		<label for="state_dateRange" style="auto"> Select Date Range:&nbsp;</label> &nbsp;
+		<input id="state_dateRange" style="auto" class="input-style" size="30" value="{{data.from_date}} to {{data.to_date}}"> &nbsp;
+		<input type="button" id="btnShow" style="auto" value="Show" class="btn btn-primary" /> &nbsp;
+		<input type="button" id="reset" style="auto" value="reset" class="btn btn-primary " /> 	
+	</li>	
+</ol>
+ <div class="nav-md">
+    <div class="container body" >
+      <div class="main_container">		
+		<div class="col-md-12 col-sm-12 col-xs-12">
+		  {% include "build/statistics/minMaxAvgFileDetails.html" %}
+		</div>				
+     </div>
+   </div>
+</div>
+<script>//range with validations 
+
+jQuery("#btnShow").click(function() {
+    if (jQuery("#state_dateRange").val().length == 0) {
+        alert('All fields are required');
+    } else {
+        var res = jQuery("#state_dateRange").val().replace(" to ", "&to=");
+        window.location.replace('http://' + window.location.host + '/statistics/{{type}}/?t=dashboard&from=' + res + '&u='+jQuery('#updateIdDropdown').val());
+    }
+})
+jQuery("#reset").click(function() { window.location.replace('http://' + window.location.host + '/statistics/{{type}}/?t=dashboard'); })
+var a = moment("{% if request.GET.from  %}{{ request.GET.from  }}{% else %}{{data.from_date}}{% endif %} ", 'YYYY-M-D');
+var b = moment("{% if request.GET.to  %}{{ request.GET.to  }}{% else %}{{data.to_date}}{% endif %}", 'YYYY-M-D');
+var diffDays = b.diff(a, 'days')  + 1;
+jQuery(".recordsTill").html('(' + diffDays+ ' Days Records)');
+</script>

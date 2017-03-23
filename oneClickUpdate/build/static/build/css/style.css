@@ -1,0 +1,456 @@
+body {padding-top: 50px;}
+main{width:100%; height:100%; min-height:600px;}
+header{background-image: linear-gradient(to bottom, #3c3c3c 0%, #222 100%); background-repeat: repeat-x; }
+footer{background-image: linear-gradient(to bottom, #3c3c3c 0%, #222 100%); margin-top:10px; background-repeat: repeat-x; color: #fff; clear: both; position: relative; z-index: 10;bottom:0;  padding: 10px;width:100%; text-align:center; }
+
+#colorbox{position:fixed}
+#logo {background: url(../images/qh-logo.png) no-repeat left top;height:40px; padding: 5px 0 0 50px;   margin-top: -5px;}
+.error{color:red}
+.success{color:green;}
+.job {width:18.5%; float:left;padding:10px; border:1px solid #ccc; }
+.job-seprator{float:left;margin-top:60px;}
+#create_job_div table td,#create_job_div table th {padding:10px;margin:10px;border: 1px solid #FFF}
+#create_job_div  p {margin-top:10px;}
+.build6 table {}
+.build6 table td,.build6 th{padding:5px 10px;}
+.build6  form#create_job6_form table{border:0px; margin:10px 0}
+.build6 table td.markFailedTd {width:30%;}
+.previous-build {border:1px solid #ccc}
+.previous-build td,.previous-build th{padding:5px 10px;border:1px solid #ccc}
+.previous-build td.completed span {color:green}
+.previous-build td.failed span {color:red}
+.previous-builds .jobs-name {clear:both;font-weight:bold;margin-top:20px;}
+.previous-builds {clear:both; padding-top:20px;}
+.previous-builds .jobs {clear:both;    padding-bottom: 60px;}
+
+.previous-builds .build-released {color:green}
+.jobs p { font-size: 12px; }
+#pipeline .jobs .job {min-height:170px;}
+
+#current-job-tbl {border:1px solid #ccc;padding:5px; width :100%;text-align:center;margin-bottom:10px;}
+#current-job-tbl td,#curjobtbl table th{border:1px solid #ccc;padding:5px;margin:5px; text-align:center;font-size:12px;}
+#current-job-tbl th:first-child{width:50%;font-size:16px;}
+#job-console,#jobConsole  {dispaly:none; width:100%; padding:10px; height:200px;clear;both; float:left; margin:10px 0;pading:10px;overflow-x: visible;overflow-y: auto;word-wrap: break-word; }
+#job-console p,#jobConsole p {padding:0px 10px;margin:0px;font-size:12px;}
+#jobConsole span {margin-left:10px;}
+#jobConsoleTitle { clear: both;    float: left;    margin-top: 20px;dispaly:none;}
+#job-console .console-heading {padding:10px 10;margin:10px 0;font-size:15px; font-weight:bold; }
+
+.clear {clear:both;}
+.jobs h5 {font-weight:bold}
+.jobs h5 span {font-weight:normal; font-size:11px}
+.jobTable {width:15%; padding:10px 10px 10px 10px; margin:10px; }
+.shadow-in { -webkit-box-shadow: inset 0px 1px 10px rgba(0,0,0,0.2); -moz-box-shadow: inset 0px 1px 10px rgba(0,0,0,0.2);box-shadow: inset 0px 1px 10px rgba(0,0,0,0.2);}
+.shadow-in-radius {-webkit-box-shadow: inset 0px 1px 10px rgba(0,0,0,0.2); -moz-box-shadow: inset 0px 1px 10px rgba(0,0,0,0.2);box-shadow: inset 0px 1px 10px rgba(0,0,0,0.2);border-radius: 22px;}
+.current_job_box{float:left; width:150px; margin:10px; text-align:center; height:75px; align:center; padding:25px}
+.jobs .result-SUCCESS, .jobs .completed {background-color: lightgreen;}
+.jobs .result-SUCCESS, .jobs .queue {background-color: lightyellow;}
+.jobs .result-SUCCESS, .jobs .running {background-color: lightyellow;}
+.jobs .result-SUCCESS, .jobs .glyphicon-remove {color: red; cursor:pointer;}
+.jobs .result-FAILURE{background-color: #FE2E64;color:#fff}
+.jobs .result-ABORTED  {background-color:#F2F2F2;}
+.previous-builds .jobs .completed {border:1px solid lightgreen; background:#DEFFDC}
+.spin {-webkit-animation: spin 2s infinite linear;-moz-animation: spin 2s infinite linear;-o-animation: spin 2s infinite linear;animation: spin 2s infinite linear;}
+.build6 {  padding: 10px;}
+.build6 span {min-width:20px;}
+
+@-moz-keyframes spin { from { -moz-transform: rotate(0deg);} to {   -moz-transform: rotate(360deg); }}
+@-webkit-keyframes spin { from { -webkit-transform: rotate(0deg);}to { -webkit-transform: rotate(360deg); }}
+@keyframes spin {  from { transform: rotate(0deg);}to { transform: rotate(360deg); }}
+
+#inline_content table td, #inline_content table th{padding:5px; border:1px solid #ccc}
+#inline_content table {width: 100%;}
+#inline_content table th {max-width:100px;}
+.current_job #pipeline{margin:30px 0px 0px 0px}
+.previous-build tr th,.qh-menu-table tr th,.e2-menu-table tr th {background-color:#EEE;}
+.glyphicon-alert {color:#D7D700;}
+button{color:#FFF; height:30px; }
+button#start_job{margin-top:30px}
+.aniClass{float:right;font-size:14px}
+div#dateTime{cursor:pointer;}
+
+.login-form{color:#FFF;}
+.login-form a{color:#FFF;text-decoration:none;}
+.heading-text{color:#FFF;}
+.qh-menu-table tr td,.qh-menu-table tr th,.e2-menu-table tr td,.e2-menu-table tr th{ padding-left:20px; width:40%; border:1px solid #EEE;}
+.qh-menu-table tr td:hover,.e2-menu-table tr td:hover{background-color:#EEE; -webkit-box-shadow: inset 0px 1px 10px rgba(0,0,0,0.2); -moz-box-shadow: inset 0px 1px 10px rgba(0,0,0,0.2);box-shadow: inset 0px 1px 10px rgba(0,0,0,0.2);}
+.processing{background:#EEE;  text-align:'center'; }
+.logged-in{padding: 15px 15px;}
+.active-job div.progress {background:#E6F9E6; width:99.8%}
+
+.row{margin-left: -0px;}
+.navbar .nav{margin: 5px -10px 0 0;}
+textarea.note{resize:none; height:50px;width:200px;margin-left:10px}
+.logout-content{width:30%; margin:10% 0% 0% 35%; padding: 0px 0px 10px 0px; font-size:14px; text-align:center; height:150px;}
+.logout-content-title{margin-bottom:10px; font-size:18px;padding:10px;}
+.re-login{width:100px; cursor:pointer; margin-top:30px;padding:10px}
+.login-form-content{ color: #555; font-size: 15px; padding: 10px;}
+.login-form-content  label{font-weight: 300;}
+.clustertable{font: 11px/14px "Lucida Grande",Verdana,Helvetica,Arial,sans-serif;}
+.shadow-in { -webkit-box-shadow: inset 0px 1px 10px rgba(0,0,0,0.2); -moz-box-shadow: inset 0px 1px 10px rgba(0,0,0,0.2);box-shadow: inset 0px 1px 10px rgba(0,0,0,0.2);}
+.datepicker_header{ -webkit-box-shadow: inset 0px 1px 10px rgba(0,0,0,0.2); -moz-box-shadow: inset 0px 1px 10px rgba(0,0,0,0.2);box-shadow: inset 0px 1px 10px rgba(0,0,0,0.2);}
+.pagination, .paleblue{-webkit-box-shadow: inset 0px 1px 10px rgba(0,0,0,0.2); -moz-box-shadow: inset 0px 1px 10px rgba(0,0,0,0.2);box-shadow: inset 0px 1px 10px rgba(0,0,0,0.2); }
+.odd td{background-color:#fff;}
+.even td{background-color:#eee;}
+table.paleblue + ul.pagination{margin-top:10px !important;}
+table.paleblue{width:70em}
+table.paleblue td{font:12px/14px "Lucida Grande",Verdana,Helvetica,Arial,sans-serif !important; height:25px;}
+table.paleblue th{font:12px/14px "Lucida Grande",Verdana,Helvetica,Arial,sans-serif !important; height:40px;}
+ul.pagination{font:12px/14px "Lucida Grande",Verdana,Helvetica,Arial,sans-serif !important;}
+#chartZoom{margin:15px; font-size:18px;}
+.recordsDropdown{margin:15px;}
+.displayNone{display:none;}
+.previous-build input{margin-top:-5px;}
+.floatLeft{float:left; }
+.floatRight{float:right;}
+#chart1{margin:10px;}
+#checkboxMsg {background:url('../images/loader-color.gif') no-repeat;url("../images/loader-color.gif") no-repeat scroll 0 0;line-height: 50px;margin-left: 10px; padding: 10px 50px;}
+#myOverlay{position:fixed;height:100%;width:100%;background:black;opacity:.7;z-index:2;display:none;}
+.loadingGIF{position:fixed;top:40%;left:45%;z-index:3;color:#fff;background:url("../images/loader-color.gif") no-repeat scroll 0 0; line-height: 25px; padding-left: 30px;}
+.loader-div{background:url("../images/loader-white.gif") no-repeat; no-repeat scroll 0 0; clear: right; float: left; line-height: 24px;    margin: 0;   padding-left: 30px; display:none;}
+#checkboxTable {display:none;}
+#cboxLoadedContent{margin-bottom:00px;}
+.hr-sect { display: flex; flex-basis: 100%; align-items: center; color: rgba(0, 0, 0, 0.35);margin: 8px 0px; }
+.hr-sect::before, .hr-sect::after { content: ""; flex-grow: 1; background: rgba(0, 0, 0, 0.35); height: 1px; font-size: 0px; line-height: 0px; margin: 0px 8px; }
+.vr-sect {  border-left: 1px solid black;   margin-left: 8px; padding: 10px;height: 50px;}
+
+.generatemv { margin:25% 0px 0px 28%;  color:#FFF;}
+.generatemr { margin:0% 0px 0px 28%;  color:#FFF;}
+.generatemr input, .generatemv input{height:25px;  font-size:14px;}
+
+#create_job4_form table{width:100%;height:100px;margin-top:25px;}
+#create_job4_form table td{width:25%;}
+#create_job4_form table td.partation{width:3%;}
+#create_job4_form table td div.noteLabel{float:left; width:10%; height:100px}
+#create_job4_form table td div.markFailBtn{float:right; margin-right:50px}
+
+#create_job6_form div.optionError, #create_job6_form div.textareaError{margin-left:0px;}
+#create_job6_form table td{width:49%;}
+#create_job6_form table td div.noteLabel{float:left; width:10%; height:100px}
+#create_job6_form table td.partation{width:3%;}
+#create_job6_form table td textarea.note{margin-left:0px}
+#create_job6_form table td div.OtherPassNote textarea.note{margin-left:10px}
+#create_job6_form  .build6_outer_div button, input[type="button"]#create_job6_form_btn{margin-left:10px}
+
+ .OtherfailNote #cancel_job6_form_btn{margin-top:10px}
+
+#build-basic-head {cursor:pointer;}
+#build-basic-head h4 {float:left;}
+#build-basic-head a {float:right;padding:10px;}
+.soloBuildDetails th:nth-child(1) { min-width:5%; }
+.soloBuildDetails th:nth-child(2) { min-width:15%; }
+.soloBuildDetails th:nth-child(3) { min-width:10%; }
+.soloBuildDetails th:nth-child(4) { min-width:15%; }
+.soloBuildDetails th:nth-child(5) { min-width:18%; }
+.soloBuildDetails th:nth-child(6) { min-width:30%; }
+
+.buildDiffDetails th:nth-child(1) { min-width:30%; }
+.buildDiffDetails th:nth-child(2) { min-width:30%; }
+.buildDiffDetails th:nth-child(3) { min-width:20%; }
+.buildDiffDetails th:nth-child(4) { min-width:10%; }
+.buildDiffDetails th:nth-child(5) { min-width:10%; }
+
+
+/* Previous job Details */
+.prev-job {clear:both;margin-top:30px;}
+.prev-job .job-step{height:120px; float:left;width:18.5%;padding:5px;color:#6E6E6E}
+.prev-job .success {background:#CEF6D8;color:#21610B}
+.prev-job .failed   {background:#ffe6e6;color:#21610B}
+.prev-job h4 {font-size:16px;color:#000; }
+.prev-job h5 {padding-left:5px;}
+.prev-job h4 span { display:inline; font-size:12px;color:#000}
+.prev-job h4 p { display:inline; }
+.prev-job p {color:#585858; margin:0px;font-size:12px; padding-left:5px;}
+.prev-job-seprator{float:left;margin-top:40px;}
+
+/*Notification*/
+.notifypop {position: absolute;bottom: 0;  height:50px; z-index:1; position: fixed;left: 0;right: 0;-webkit-box-shadow: inset 0px 1px 1px rgba(0,0,0,0); -moz-box-shadow: inset 0px 1px 1px rgba(0,0,0,0);box-shadow: inset 0px 1px 1px rgba(0,0,0,0);}
+.flyout {width: 100%;margin-top: 10px;font-size: 11px;position: relative;font-family: 'Lucida Grande', Tahoma, Verdana, Arial, sans-serif;background-color: white;padding: 10px;background: lightyellow;border: 1px solid #c5c5c5;-webkit-box-shadow: inset 0px 1px 10px rgba(0,0,0,0.1); -moz-box-shadow: inset 0px 1px 10px rgba(0,0,0,0.1);box-shadow: inset 0px 1px 10px rgba(0,0,0,0.1);-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;}
+.flyout h2 {text-transform: uppercase;color: #666;font-size: 1.2em;padding-bottom: 5px;border-bottom: 1px solid #dcdbda;}
+.flyout p { padding-bottom: 25px; font-size: 1.1em; color: #222; }
+
+/* revrt job css start*/
+.rvrtBckBtn{margin:20px 0px 20px 0px;}
+.historyBtn{padding:5px; color:#FFF; cursor: pointer; margin-bottom:10px;}
+.historyBtn:hover {  text-decoration: none; color:#FFF; }
+a.historyBtn:focus, a.historyBtn:hover,a.extractCSV:focus, a.extractCSV:hover {text-decoration: none; color:#FFF;}
+.extractCSV{margin-left:10px; padding:2px; color:#FFF; cursor: pointer; margin-bottom:10px;}
+.tableTocsvPage,.tableTocsvPage .breadcrumb,.tableTocsvPage .breadcrumb a {background-color:#333;color:#333;z-index:100px}
+.tableTocsvPage h3{color:#FFF; text-align:center; border:1px solid #FFF; width:30%;font-size:25px; font-weight:bold; }
+.selected-job .revert-job-step{height:160px; float:left;min-width:19%; padding:5px; margin:5px; background:#FFF; color:#333}
+.selected-job {clear:both;margin-top:30px; color:#333; }
+.selected-job  h5 { font-size: 13.4px; font-weight:bold; color:#333; }
+.selected-job .queue {background-color: lightyellow;}
+.selected-job .running {background-color: lightyellow;}
+.selected-job .success {background-color: lightgreen;}
+.selected-job h4 {font-size:16px;color:#333; }
+.selected-job h5 {padding-left:5px;}
+.selected-job h4 span { display:inline; font-size:12px;color:#333}
+.selected-job h4 p { display:inline; }
+.selected-job p {  margin:0px;font-size:12px; padding-left:5px;}
+.selected-job-seprator{float:left;margin-top:40px;}
+.selected-revert-job-seprator{float:left;margin-top:70px;}
+.selected-job div.failedJob{background-color:#FCE5E5;}
+.running_ajax{background-color:#FFF5EE;}
+/* revrt job css end*/
+.buildDetailBlock  h4 {float:left;}
+.HistoryCheckBxTab {float:right;}
+.previous-builds table  td:nth-child(1) { text-align:center;width:5%}
+.previous-builds table  td:nth-child(2),.previous-builds table  td:nth-child(6) { text-align:center;width:14%}
+.previous-builds table  td:nth-child(4),.previous-builds table  td:nth-child(7) { text-align:center;width:10%}
+.previous-builds table  td:nth-child(3){text-align:center;width:13%}
+
+.triggerChecked legend {font-size:14px;}
+.triggerChecked button {margin:10px;padding:0 40px;}
+.triggerChecked p {padding:5px;}
+.revertProgress {width: 62%;}
+.job-section{margin:10px;}
+@media (max-width: 1024px) { .prev-job .job-step{min-height:150px; float:left;width:18%;padding:5px;color:#6E6E6E; }}
+#soloBuildDetails_filter,#buildDiffDetails_filter{display:none}
+#soloBuildDetailsDiv .solo-build-details,#buildDiffDetailsDiv .diff-details{ border:1px solid #ccc;padding: 20px 10px;}
+
+#solo-detail-head,#diff-detail-head{background:#ddd;color:#333;padding:10px; cursor:pointer;}
+.build-details .detail-head { clear: both;    color: #000;    float: left;    font-size: 16px;    margin: 0 0 0px;    padding: 0px 10px;    width: 100%; background:#FFF}
+
+.build-details .detail-body table {font-size:13px;}
+.build-details .detail-body table td,.build-details .detail-body table th {padding:3px 5px;border:1px solid #ddd}
+.build-details .detail-body th {font-weight:bold;max-width:350px;}
+.build-details .detail-body .tblHead {font-weight:bold;min-width:240px;text-align:center;background:#ddd}
+.build-details .detail-body .subHead {font-weight:bold; text-align:center; background-color:#FFF;}
+.build-details .detail-body .subSubHead {font-weight:bold; text-align:center; background-color:#EEE;}
+.build-details .build-basic table.job-dtl-tbl {float:left;width:49.5%;margin-bottom:10px; }
+.build-details .build-basic table.job-dtl-tbl:first-child {margin-right:5px;}
+.build-details .build-basic table.jobSteps {float:left;width:100%}
+.build-details .build-basic table p {padding:0 5px;margin:0px;}
+.build-details .build-basic table.subtbl {width:100%}
+
+#build-details .detail-head { clear: both;    color: #000;    float: left;    font-size: 16px;     padding: 2px 10px;    width: 100%; background:#ddd}
+#build-details .detail-body {padding:20px 10px; border:1px solid #ccc; }
+#build-details { margin-top: 2%;}
+#build-details .detail-body table {font-size:13px;}
+#build-details .detail-body table td,#build-details .detail-body table th {padding:3px 5px;border:1px solid #ddd}
+#build-details .detail-body th {font-weight:bold;min-width:240px;}
+#build-details .detail-body .tblHead {font-weight:bold;min-width:240px;text-align:center;background:#ddd}
+#build-details .detail-body .subHead {font-weight:bold;min-width:240px;text-align:center;}
+#build-details .build-basic table.job-dtl-tbl {float:left;width:49.5%;margin: 14px 0 0 }
+#build-details .build-basic table.job-dtl-tbl:first-child {margin-right:5px;}
+#build-details .build-basic table.jobSteps {float:left;width:100%}
+#build-details .build-basic table p {padding:0 5px;margin:0px;}
+.builddtl-steps {margin:0px;}
+.builddtl-steps .build-step {min-height:155px;font-size:12px;}
+.builddtl-steps .build-step p {color:#000;padding:0 10px;margin:0px;}
+.builddtl-steps .build-step .stepname {font-size:15px;margin:10px 0;}
+.builddtl-steps .success {background:#CEF6D8;color:#000;}
+#build-details .build-basic table.job-sum-tbl {float:left;width:100%; }
+#build-details .build-basic .subtblCol {margin:0px;padding:0px; }
+#build-details .build-basic table.subtbl {width:100%}
+.myrow {margin:0 0 20px 0}
+.col-xs-15,.col-sm-15,.col-md-15,.col-lg-15 {position: relative;min-height: 1px;padding-right: 10px;padding-left: 10px;}
+.col-xs-15 {width: 20%;float: left;}
+@media (min-width: 768px) {.col-sm-15 {width: 20%;float: left;  }.prev-job .job-step{color:#6E6E6E; }}
+@media (min-width: 992px) {.col-md-15 {width: 20%;float: left; }.prev-job .job-step{color:#6E6E6E; }}
+@media (min-width: 1200px) {.col-lg-15 { width: 20%;float: left; }.prev-job .job-step{color:#6E6E6E; }}
+
+.download-buildpath {font-size:14px;color:blue;}
+.taginput {border:1px solid #ccc;width:400px;height:200px;}
+.taginput #packagelist {width:100%;min-height:190px;}
+.taginput span { border: 1px solid #a5d24a;    -moz-border-radius: 2px;    -webkit-border-radius: 2px;    display: block;    float: left;    padding: 5px;    text-decoration: none;    background: #cde69c;    color: #638421;    margin-right: 5px;    margin-bottom: 5px;    font-family: helvetica;    font-size: 13px}
+.taginput input{width: 100%;    margin: 0px;    font-family: helvetica;    font-size: 13px;    border: 1px solid transparent;    padding: 5px;    background: transparent;    color: #000;    outline: 0px;    margin-right: 5px;    margin-bottom: 5px;}
+.scrollToTop{padding:10px 15px; text-align:center; font-weight: bold; color: #333; text-decoration: none; position:fixed;bottom:75px;right:40px;display:none;background:#DDD;}
+.scrollToTop:hover{	text-decoration:none;color:#000}
+#logout-page{font-family:Arial,Helvetica,sans-serif; font-size: 12px;}
+.page-header {border:0px;margin:0px; padding:0px;}
+
+.rvrtNoteLable{float: left; margin-right:10px; min-width:50px;}
+.rvrtdateTimeLable{float: left; margin-right:10px; min-width:50px;}
+a.current {color:black; text-decoration:none;}
+.revertProceedPopup td button{margin-left: 10%; width: 100px;}
+.button{margin-left: 3%; width: 100px;}
+
+.CurrentRunningSymbol{font-size:16px; color:green;animation: blinker 1s linear infinite;}
+@keyframes blinker { 50% { opacity: 0.0; } }
+.current_job table tr td {height: 30px;}
+
+.active_job_div{border:1px solid #ccc;}
+.job_states{display:flex;width:100%;margin:0px;}
+#stage{background:lightgreen;margin:3px;box-shadow: inset 0px 1px 10px rgba(0,0,0,0.1);padding:5px;text-align:center;width:100%;}
+#incomplete_stage{background:lightpink;margin:3px;box-shadow: inset 0px 1px 10px rgba(0,0,0,0.1);padding:5px;text-align:center;width:100%;}
+#current_stage{background:lightyellow;margin:3px;box-shadow: inset 0px 1px 10px rgba(0,0,0,0.1);padding:5px;text-align:center;width:100%;}
+.line {border: 1px solid #ccc;margin-bottom:0;}
+
+#solo_diff_details{display:flex;width:100%;}
+.solo_diff_table {text-align:center;font-size:13px;width:100%;}
+.active_job_table td,.active_job_table th{text-align:center;width:20%;border:1px solid #ddd;}
+.solo_diff_table td,.solo_diff_table th{text-align:center;border:1px solid #ddd;}
+.active_job_table th,.diff_details th,.solo_details th{background-color:lightgray;}
+#active_job_details,#solo_diff_details{font-size:14px;margin:0px;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;}
+.diff_details,.solo_details,.active_job_table{width:100%;}
+.diff_details,.solo_details{margin-left:3px;}
+
+h3 .heading{margin:0;}
+#cboxLoadedContent {border: 1px solid #ccc;padding:5px;}
+
+.build6_outer_div{margin-top:10px;width:100%;}
+#revertRedirectE2,#revertRedirectQH{cursor:pointer;}
+#release_div{width:100%;}
+#release_div textarea,#release_div #dateTime{margin-left:10px;}
+
+.markFailedTd #fail_div{width:100%;display:flex;}
+
+.build4 #selected_opt,.build4 .OtherfailNote,.build6 #end_job4_form_btn,.build6 #selected_opt{margin-left:10px;}
+
+.build4 .optionError{margin-left:51px;}
+.build6 .textareaError{margin-left:-45px;}
+.build4 #end_job4_form_btn{margin-left:10px;margin-top:5px;}
+.build6 #cancel_job6_form_btn{margin-top:0px;}
+.build6 #release_div,.build6 .partation{margin-top:-32px;}
+.build4  .OtherfailNote,.build4 .optionError,.build4 .textareaError{margin-top:5px;padding:0px;}
+.build6 #revert_job .markFailedTd #fail_div .textareaError{margin-left:-44px;}
+.build6 #revert_job .markFailedTd #fail_div{margin-top:20px;}
+.build6 #revert_job #release_div{margin-top:19px;}
+.release-revert{margin-left:60px;margin-top:2px;}
+.build4,.job_states,.active_job_table,.build6,.solo_diff_table{font-size:12px;}
+.build4 .h3,.build4 .h4,.build4,.job_states,.active_job_table,.build6,.solo_diff_table{font-family:'Lucida Grande', Tahoma, Verdana, Arial, sans-serif,,Helvetica;}
+
+input {font-weight:normal;font-size:14px;}
+.col-lg-1, .col-lg-10, .col-lg-11, .col-lg-12, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-md-1, .col-md-10, .col-md-11, .col-md-12, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8, .col-md-9, .col-sm-1, .col-sm-10, .col-sm-11, .col-sm-12, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-xs-1, .col-xs-10, .col-xs-11, .col-xs-12, .col-xs-2, .col-xs-3, .col-xs-4, .col-xs-5, .col-xs-6, .col-xs-7, .col-xs-8, .col-xs-9{padding-left: 0px;}
+
+.optionError, .textareaError{color:red;font-size:12px;padding-left:45px;}
+.OtherfailNote{margin-left:45px;}
+.build6 .OtherfailNote,.build6_outer_div .OtherPassNote{margin-left:45px;margin-top:10px;}
+.build6  #VDB{margin-left:10px;width:160px;margin-right:20px;height:1.5em;}
+.build4 #selected_opt,.build6 #selected_opt{width:160px;margin-right:60px;height:1.5em;}
+.build4 .popmsg-stage,.build6 .popmsg-stage,.triggerChecked .popmsg-stage{display:flex;width:100%;}
+#revert_job .popmsg-stage .success{background:#CEF6D8;color:#000;border:1px solid CEF6D8;width:100%;}
+.build4 .popmsg-stage .success,.build6 .popmsg-stage .success,.triggerChecked .popmsg-stage .success{background:#CEF6D8;color:#000;border:1px solid CEF6D8;width:20%;}
+.build4 .popmsg-stage div,.build6 .popmsg-stage div,.build6 #revert_job .popmsg-stage div ,.triggerChecked .popmsg-stage div{padding:5px;color:#6E6E6E;font-weight:normal;margin-left:2px;font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;width:20%;font-weight:normal;font-size:12px;box-shadow: inset 0px 1px 10px rgba(0,0,0,0.2);}
+.build4 .popmsg-stage h5, .build6 .popmsg-stage h5,.triggerChecked .popmsg-stage h5{font-weight:normal;}
+.build4 .popmsg-stage div:nth-child(3),#build6_job .popmsg-stage div:nth-child(5),.build6  #revert_job .popmsg-stage div:nth-child(3){background-color:lightyellow;}
+.build4 .popmsg-stage div:nth-child(3) p,#build6_job .popmsg-stage div:nth-child(5) p,.build6  #revert_job .popmsg-stage div:nth-child(3) p{visibility:hidden;}
+.build4 .popmsg-stage div:nth-child(3) p:before,#build6_job .popmsg-stage div:nth-child(5) p:before,.build6 #revert_job .popmsg-stage div:nth-child(3) p:before{content:'Status : Current Step ';visibility:visible;}
+.build4 .popmsg-stage div p ,.build6 .popmsg-stage div p{margin-top:-6px;}
+.build6 #revert_job #dateTime{margin-left:0px;margin-top:3px;}
+.build6 #revert_job #revert_job6_btn{margin-left:69px;margin-top:3px;}
+.build6 #revert_job #selected_options .OtherfailNote{margin-left:40px;margin-top:3px;}
+.build6 #revert_job #selected_options .optionError,.build6 #revert_job #selected_options .textareaError{margin-left:25px;margin-top:3px;}
+.build4 .popmsg-stage h5, .build6 .popmsg-stage h5, .triggerChecked .popmsg-stage h5{font-weight: normal;margin-bottom: 15px;}
+.build6 #revert_job .OtherPassNote{margin-left:20px;}
+.build6 #revert_job #revert_job6_btn{margin-left:10px;}
+.build6 #revert_job #selected_options .OtherfailNote{margin-left:45px;}
+.build6 #revert_job #selected_options .optionError,.build6 #revert_job #selected_options .textareaError{margin-left:0px;}
+.triggerChecked .popmsg-stage div p{margin-top:-6px;padding:0px;}
+.titleCase {text-transform: capitalize;}
+
+#create_job_form #update_frequency{margin:3px;}
+#create_job_form #lastStep{border:none;}
+#cancel_create_job{margin-left:12px;margin-top:5px;}
+.paddingTop10px {padding-top:10px;}
+
+
+#floating_menu { position: fixed; right: 0; bottom: 35%; width: 210px;  margin-top: -2.5em;  list-style:none;background:#fff}
+#floating_menu  li {border:1px solid #ccc; width:100%;text-transform: capitalize;}
+#floating_menu .heading { background: #000 none repeat scroll 0 0;   color: #fff;    font-size: 15px;    text-align: center; padding:10px 0}
+#floating_menu a,#floating_menu a:visited  { display: block; padding: 5px 25px 7px 25px; width: 4em;  text-align: center; -webkit-transition: .5s all ease-out;   -moz-transition: .5s all ease-out;    transition: .5s all ease-out;    border-top: 3px solid white;    color: #aaa;    text-decoration: none;   width:100%}
+#floating_menu a:hover { color: #000; -webkit-box-shadow: inset 0px 1px 10px rgba(0,0,0,0.2); -moz-box-shadow: inset 0px 1px 10px rgba(0,0,0,0.2);box-shadow: inset 0px 1px 10px rgba(0,0,0,0.2);}
+#floating_menu li.active a {  border-top: 3px solid lightgreen;  color: #333;-webkit-box-shadow: inset 0px 1px 10px rgba(0,0,0,0.2); -moz-box-shadow: inset 0px 1px 10px rgba(0,0,0,0.2);box-shadow: inset 0px 1px 10px rgba(0,0,0,0.2);}
+#floating_menu span {float:right;padding:0 10px;cursor:pointer}
+
+.statistic-sidebar ul li a{padding:10px 5px;border-top:1px solid #ccc;}
+.statistic-sidebar ul .active {border-top:3px solid green;background:#eee}
+.minMaxSizeDivSummery{padding:5px 0px}
+.minMaxSizeDivSummery .count_bottom {margin:0px 0px 0px 15px }
+
+.package_list_div div label, .package_list_div div input {float:left;width:initial;padding:0px 10px}
+.package_list_div div input {float:left;width:initial;margin:5px 10px 5px 0px}
+.package_list_div div {float:left;width:100%;clear:both;}
+.newqhjobtbl h4 {float:left;dispaly:block;}
+
+.packagelist_stage {text-align:center;padding:10px 0;}
+.packagelist_stage button,.packagelist_stage span {}
+.packagelist_stage span {display:block;width:100%}
+
+#create_job_form label{display:block;padding:0px 10px}
+.lastStepTbl { table-layout: fixed;  border-collapse: collapse;  width: 100%;
+  max-width: 700px;}
+.lastStepTbl h4 {margin-top:0px;}
+.lastStepTbl .err {color:red;display:none}
+.lastStepTbl .error {color:red;border:1px solid red;}
+.lastStepTbl td {vertical-align: top; text-align: left;max-height:100px;}
+.lastStepTbl td:first-child {width:180px;}
+.textarea_div {width:100%}
+.additional_packagetbl {display:none}
+.textarea_div #additional_package {width:100%;display:none}
+#showAdPackage {margin:0 10px;}
+
+#qhInDetails input {width:100%}
+#buildEngine_wrapper #buildEngine_filter {display:none}
+
+
+.col-md-3 div.scroll {height: 500px;overflow-y: scroll; overflow-x: hidden; }
+.scrollbar{background: #F5F5F5;}
+.scrollbar::-webkit-scrollbar-track{-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);border-radius: 10px;background-color: #F5F5F5;}
+.scrollbar::-webkit-scrollbar{width: 12px;background-color: #F5F5F5;}
+.scrollbar::-webkit-scrollbar-thumb{border-radius: 10px;-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);background-color: #555;}
+div.scroll {height: 70%;overflow-y: scroll; overflow-x: hidden;}
+div.patchFileTableHeader,div.patchFileTableFooter{width:10%}
+.LoadingImage{background:url(../images/loading.gif) no-repeat center center;}
+.LoadingImage{position:absolute; top:0; left:0; width:100%; height:100%;}
+.packagelistLoadingImage{position:absolute; top:25%; left:0; width:100%; height:100%;}
+.loaderText{position:absolute; top:0; left:0; width:100%; height:100%;margin-top: 25%;}
+div.errorBox{color:Black; }
+div.errorBox div#cboxLoadedContent{border:0px}
+
+.soloDetails table {width:100%}
+.soloDetails td,.soloDetails th {border:1px solid #ccc;padding:0 10px;font-weight:normal}
+.soloDetails .subHead {width:50%}
+table#qhMinAvgMaxDetails tr:first-child td{background-color:#f5f5f5;}
+.breadcrumb > .active b.markEgine{color: #FFFFFF;}
+
+.input-style{background-color: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
+    color: #555;
+    font-size: 14px;
+    height: 34px;
+    line-height: 1.42857;
+    padding: 6px 12px;
+    transition: border-color 0.15s ease-in-out 0s, box-shadow 0.15s ease-in-out 0s;}
+
+#create_job_form select[multiple]#SigTypeSelect, create_job_form select[size]#SigTypeSelect {
+height: 60px;
+width: 150px;
+overflow-y:auto;
+
+}
+
+.sigTypespan .ms-choice{	
+ background-color: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
+	color: #555;
+    font-size: 14px;
+    line-height: 1.42857;
+    padding: 15px;
+    transition: border-color 0.15s ease-in-out 0s, box-shadow 0.15s ease-in-out 0s;
+}
+.sigTypespan .ms-choice > span{top: 3px;}
+.sigTypespan .ms-drop  input[type="checkbox"] {margin: 0px 8px 0px;}
+.ms-choice > span.placeholder {color: #444 !important; }
+.ms-choice > div {
+background: rgba(0, 0, 0, 0) url("multiple-select.png") no-repeat scroll left top;
+    height: 25px;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 20px;
+	border-radius: 4px;
+	background-color: #ccc !important;
+	padding:0px 0px 32px 0px;
+}
+.type_list .ms-parent:nth-child(3) .ms-choice{border:1px solid #FFF}
+.sigTypespan div.ms-parent{top:5px;}
+.lastStepTbl div.skip-package{ margin-top: 10px;}

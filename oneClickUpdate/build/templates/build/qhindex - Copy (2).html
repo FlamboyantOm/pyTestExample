@@ -1,0 +1,504 @@
+{% extends "build/base.html" %}
+{% block content %}
+<div id="curjobtbl">
+    {% load staticfiles %}
+    <link rel="stylesheet" type="text/css" href="{% static 'build/css/jquery.simple-dtpicker.css' %}" />
+	<script type="text/javascript" src="{% static 'build/js/jquery.simple-dtpicker.js' %}"></script>
+	<link href="{% static 'build/css/multiple-select.css' %}" rel="stylesheet">
+	<script src="{% static 'build/js/multiple-select.js' %}"></script> 
+
+  <div class="current_job" id="job-section">
+    <div id="job_message"></div>
+    <div id="create_job_div"> </div>
+	<div class="MnlJobMsg"></div> 
+    <div id="pipeline"><span class="loader"><h4>Loading..</h4></span></div>
+    <div id="jobConsoleTitle" ></div>
+    <div id="jobConsole" class="shadow-in " style="display:none;"></div>
+    <div class="clear"></div>
+    <div>
+      <div class="buildDetailBlock ">
+        <h4> Previous Job History</h4>
+      <div class="HistoryCheckBxTab ">
+        <div class="loader-div">Please wait...</div>
+        <table id="checkboxTable" class="previous-build option-select  shadow-in">
+        <tr><td colspan="4">Filter Status:</td></tr>
+        <tr>
+            <td class="completed"><input type="checkbox" name="completed" id="completed" class="check" value="6" />&nbsp;
+              <span class="glyphicon glyphicon-ok-sign"></span> Completed </td>
+            <td class="completed" ><input type="checkbox" name="failed" id="failed" class="check"  value="1" />&nbsp;
+              <span class="glyphicon glyphicon-ok-sign"></span> No Update Available </td>
+            <td class="failed"><input type="checkbox" name="failed" id="failed" class="check"  value="2" />&nbsp;
+              <span class="glyphicon glyphicon-remove-sign"></span> Test Failed </td>
+            <td class="failed"><input type="checkbox" name="failed" id="failed" class="check"  value="3" />&nbsp;
+              <span class="glyphicon glyphicon-remove-sign"></span> Failed </td>
+        </tr>
+        </table>
+      </div>
+           <div id="buildDetails"><span class="loader"></span></div>
+        </div>
+    </div>
+    <div style='display:none'>
+      <div id='inline_content' style='padding:10px; background:#fff;'> </div>
+    </div>
+  </div>
+</div>
+{% url 'build:qh_ajax' as pipeline_ajax_url %}
+{% url 'build:previous_builds' type=type build_type=1 as previous_builds_ajax_url %}
+{% url 'build:create_job' type='qh' step='1' as  create_job_url_qh_1 %}
+{% url 'build:create_job' type='qh' step='2' as  create_job_url_qh_2 %}
+{% url 'build:create_job' type='qh' step='3' as  create_job_url_qh_3 %}
+{% url 'build:fail_job' type='qh' as fail_job_url %}
+{% url 'build:verify_job_jenkins' engine='qh' flag='1' as  verify_job_jenkins_ajax %}
+{% url 'build:current_job_details_ajax' as current_job_details_ajax_url %}
+<script type="text/javascript">
+jQuery(document).ready(function() {
+    getPipeline(true);
+    getBuildDetails(true, cnt = 10);
+	verifyJob(true);
+});
+var cnt = 10;
+var perPage = '';
+jQuery("#perPage").click(function() {
+    cntLast = cnt;
+    cnt = cnt + 10;
+    jQuery("#counter").html(" Record show from" + cntLast + " to  " + cnt);
+    getBuildDetails(response = true, cnt)
+});
+function checkval() {
+    var str = jQuery('.option-select input:not([type="checkbox"])').serialize();
+    var str1 = jQuery(".option-select input[type='checkbox']").map(function() {
+        if(this.checked == '1')
+            return jQuery(this).val()
+    }).get().join(",");
+    if(str1 != "" && str != "") str += " & " + str1;
+    else str += str1;
+    return str;
+}
+jQuery(".option-select input[type='checkbox']").change(function(e) {
+    e.stopPropagation();
+    var me = jQuery('#job-section');
+    me.data('prev_jobid','0');
+	clearInterval(getBuildDetailsTime);
+	jQuery(".loader-div").show();
+	jQuery("#checkboxTable").hide();
+    getBuildDetails();   
+});
+
+function getBuildDetails(response = false, perPage) {
+    var me = jQuery('#job-section');
+    if(response == true) me.data('buildHistoryRunning', true);
+    if(me.data('buildHistoryRunning') == true)
+    {
+        me.data('buildHistoryRunning', false);
+        jQuery.ajax({
+            type: "POST",
+            url: '{{previous_builds_ajax_url}}',
+            dataType: 'json',
+            async: true,
+            data: {
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+                'checkedValue': checkval(), 'perPage': perPage, 'jobid':me.data('prev_jobid')
+            },
+            success: function(res)
+            {
+                if (res.data){
+                jQuery('#buildDetails').html(res.data);
+                }
+                me.data('prev_jobid',res.jobid)
+                me.data('buildHistoryRunning', true);
+				jQuery("#checkboxTable").show();
+				jQuery(".loader-div").hide();
+                getBuildDetailsTime = setTimeout(function() {
+                    getBuildDetails();
+                }, 5000);				
+            }
+        });
+    }
+    else
+        console.log('issue');
+}
+
+function getPipeline(response = false) {
+    var me = jQuery('#job-section');
+    if(response == true)
+        me.data('pipelineRunning', true);
+    if(me.data('pipelineRunning') == true)
+    {
+        me.data('pipelineRunning', false);
+        if(me.data('requestRunning') == true) flag = 1;
+        else flag = 0;
+        if(!me.data('progress_log')) me.data('progress_log', 0);
+        if (typeof(jQuery('#package_list').attr('package_list')) === "undefined") packege_list = 0;
+        else packege_list = 1;			
+        jQuery.ajax({
+            type: "POST",
+            url: '{{pipeline_ajax_url}}',
+            dataType: 'json',
+            async: true,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            data: {
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+                'running_job': flag, 'progress_log': me.data('progress_log'), 'packege_list':packege_list,
+            },
+            success: function(res)
+            {
+			
+				//jQuery('.multiselect').multiselect();
+                jQuery('#pipeline').html(res.data);
+                if (res.mannual_step == 0 ){ jQuery(window).colorbox.close(); }
+					if(res.mannual_step == 4){
+						jQuery(".MnlJobMsg").html('<div class="notifypop"><div class="flyout"><p><span class="glyphicon glyphicon-flash"></span> Please Click Continue to Proceed <b>Mark Verify </b>!</p></div></div>').show();
+					}else if(res.mannual_step == 6){
+						jQuery(".MnlJobMsg").html('<div class="notifypop"><div class="flyout"><p>Please Click Continue to Proceed <b>Mark Release </b>!</p></div></div>').show();
+					}else if (res.mannual_step == 2 )
+					{
+					 jQuery(".MnlJobMsg").html('').hide();
+					}
+					else if (res.mannual_step == 0 )
+					{ jQuery(window).colorbox.close();  jQuery(".MnlJobMsg").html('').hide();}
+                if(res.nexProgLogId != 0) {
+                    jQuery('#jobConsole').show();
+                    jQuery('#jobConsole').prepend(res.pconsole_text);
+                    jQuery('#jobConsoleTitle').html("<h4>" + res.console_head + "</h4>");
+                    jQuery('.page-header h1').html('Active Job #'+res.JobId+'' +res.activeStep);
+                    me.data('progress_log', res.nexProgLogId);
+
+                } else {
+                    me.data('progress_log', 0);
+                    jQuery('#jobConsole').html('');
+                    jQuery('#jobConsoleTitle').html('');
+                    jQuery('#jobConsole').hide();
+                    jQuery('.page-header h1').html('{{request.title}}')
+                }
+                if(me.data('requestRunning') == true) {
+                    jQuery('#create_job_div').hide();
+                }
+                else {				
+                    loadForms(res);
+                }
+                me.data('pipelineRunning', true);
+                if(jQuery("#pipeline_submit").length == 0)
+                    getPipelineTime = setTimeout(function() {
+                        getPipeline();
+                    }, 2000);
+            }
+        });
+    }
+}
+
+function failedDopdown() {
+    var get_id = document.getElementById('selected_opt');
+    var result = get_id.options[get_id.selectedIndex].value;
+	if(result != 0)
+	 {jQuery('.optionError').html(''); }
+	if(result == 3){
+        jQuery('#cboxWrapper').height("auto");
+        $('#MVfailNote').removeAttr('disabled');
+	}else{
+		jQuery(' .optionError ,.textareaError').html('');
+        $('#MVfailNote').attr('disabled',true).val("");
+	}
+}
+
+function create_job_process(step=0,soloDiffDetails,JobId){
+	flag = 0;
+	if(step == 4 && flag == 0){
+	getCurrentJobDetails(true,JobId);
+	 jQuery.colorbox({innerWidth:880,innerHeight:380,fixed: true,html:' <div class="build4"> <h3 class="heading">Active Job #'+JobId+' - Mark Verify</h3> <div class="active_job"></div> <form id="create_job4_form" name="create_job4_form" type="get" action="{{create_job4_form_url}}"> <table> <tr> <td colspan="4"> <center><button id="create_job4_form_btn" onClick="startNewJob(4);" type="button" class="navbar-inverse shadow-in">Mark Verify</button></center> </td> <td colspan="4" class="partation"> <div class="vr-sect"></div> <div>OR</div> <div class="vr-sect"></div> </td> <td valign="top" width="50px" > <div class="noteLabel"><label for="Note" >Note : </label></div>  <div id="selected_options"> <select onchange="failedDopdown()" id="selected_opt" > <option value="0" selected>- Select -</option> {% for failedId,failedType  in failedTypes.items %} <option value="{{ failedId }}">{{failedType}}</option> {% endfor %} </select> </div> <div class="OtherfailNote"><textarea  name="MVfailNote" id="MVfailNote" class="note" rows="2" placeholder="Note" cols="15"  disabled="disabled" maxlength="255"></textarea></div> <div ><button id="end_job4_form_btn" type="button" class="navbar-inverse shadow-in"  >Mark Fail</button></div> <span class="optionError" ></span> <span class="textareaError"></span> </div> </td> </tr> </table> </form> </div> ', escKey:true, overlayClose:true,onLoad: function() {jQuery('#cboxClose').show();}});
+	  flag == 1;
+		jQuery("#end_job4_form_btn").click(function() {
+			var inputData = validateInput();
+			if (inputData.length == 0) {  jQuery('.textareaError').html('Please enter comment'); }
+			else if(inputData == 0){  jQuery('.optionError').html('Please select reason');}
+			else{ jQuery(window).colorbox.close(); jQuery(".manualStep").css("display", "none"); jQuery(".MnlJobMsg").css("display", "none");  endNewJob(step)} 		
+		});	
+		jQuery("#create_job4_form_btn").click(function() {  jQuery(window).colorbox.close(); jQuery(".manualStep").css("display", "none"); jQuery(".MnlJobMsg").css("display", "none");  });
+	}
+	if(step == 6){
+	getCurrentJobDetails(true,JobId);
+	  jQuery.colorbox({ innerWidth: 880, innerHeight:560,fixed: true, html: ' <div class="build6 " id="build6_job"><h3 class="heading">Active Job  #'+JobId+' - Mark Release</h3>  <div class="active_job"></div> <div class="solo_diff_details">' + soloDiffDetails + '</div> <form id="create_job6_form"name="create_job6_form" type="get" action="{{create_job6_form_url}}"> <table> <tr> <td> <div class="build6_outer_div"> <div class="build6_inner_div" id="release_div" > <div>  </div> <div class="OtherPassNote"><textarea  name="Note" id="Note" class="note" rows="4" cols="25" placeholder="Note" maxlength="255"></textarea></div> <div class="OtherPassNote"><button id="create_job6_form_btn" onClick="startNewJob(6);" type="button" class="navbar-inverse shadow-in">Mark Release</button></div> </div> </div> </td> <td class="partation"> <div class="vr-sect"></div> <div>OR</div> <div class="vr-sect"></div> </td> <td> <div class="markFailedTd"> <div id="fail_div"> <div id="selected_options"> <label for="Note">Note :</label> <select onchange="failedDopdown()" id="selected_opt" > <option value="0" selected>- Select -</option> {% for failedId,failedType  in failedTypes.items %} <option value="{{ failedId }}">{{failedType}}</option> {% endfor %} </select> <div class="OtherfailNote">			<textarea  name="MVfailNote" id="MVfailNote" class="note" rows="2" placeholder=" Note" cols="15" disabled="disabled" ></textarea></div>  <div class="OtherfailNote"><button id="end_job6_form_btn"  type="button" class="navbar-inverse shadow-in" >Mark Fail</button></div> <span class="optionError" ></span> <span class="textareaError"></span> </div> </div> </div> </td> </tr> </table> </form> </div> ', escKey: true, overlayClose: true, onLoad: function() { jQuery('#cboxClose').show(); } });	  	
+			jQuery("#end_job6_form_btn").click(function() {
+				var inputData = validateInput();
+				if (inputData.length == 0) {  jQuery('.textareaError').html('Please enter comment'); }
+				else if(inputData == 0){  jQuery('.optionError').html('Please select reason');}
+				else{ jQuery(window).colorbox.close(); jQuery(".manualStep").css("display", "none"); jQuery(".MnlJobMsg").css("display", "none");  endNewJob(step)}   
+			});
+		jQuery("#create_job6_form_btn").click(function() {  jQuery(window).colorbox.close(); jQuery(".manualStep").css("display", "none"); jQuery(".MnlJobMsg").css("display", "none");  });
+	}	
+}
+
+function validateInput(){
+	var get_id = document.getElementById('selected_opt'); 
+	var failedReasonId = get_id.options[get_id.selectedIndex].value;
+	var failedReason = get_id.options[get_id.selectedIndex].text;
+	if(failedReasonId == 0)  failedReason = failedReasonId; 
+	if(failedReasonId == 3) failedReason = isValidNote(jQuery('#MVfailNote').val());	
+return failedReason;
+}
+
+function loadForms(res) {
+    if(res.status == 1) {
+        if(!jQuery('#create_newjob').length) {
+            if ($("#colorbox").css("display")!="block"){	
+                jQuery('#create_job_div').html('<div id="create_newjob"><form name="create_new_job" id="create_new_job" method="post" action=""><button id="start_job" onclick="startNewJobPopUp(); return false;" type="button"  class="navbar-inverse shadow-in">Start New QH Job</button></form></div><div id="package_list" package_list="1"  style="display:none">'+res.packege_list+'</div><div id="type_list" type_list="1" style="display:none">'+res.type_list+'</div>');
+            }
+            jQuery('#create_job_div').show();
+        } else
+            jQuery('#create_job_div').show();
+    }
+    else {
+        jQuery('#create_job_div').html('');
+    }
+}
+
+function endNewJob(form = 4) {
+    var me = jQuery('#job-section');
+    if(me.data('requestRunning')) {
+        return;
+    }
+	failedReason = validateInput();	//validate and pass result
+    me.data('requestRunning', true);
+    getAllAbort();
+    jQuery('#create_job_div').hide();
+    jQuery('#job_message').html("<p class='success-msg list-group-item list-group-item-success'><span class='glyphicon glyphicon-check'></span> &nbsp;<span>Notification :<span/>Please wait while your request for marking fail the job is processing</p>").show().delay(3000).fadeIn('2000');
+    if(form == 4) {	
+	var get_id = document.getElementById('selected_opt'); 
+	var failedReasonId = get_id.options[get_id.selectedIndex].value;
+	var failedReason = get_id.options[get_id.selectedIndex].text;
+	if(failedReasonId == 3) failedReason = isValidNote(jQuery('#MVfailNote').val());	
+        url = '{{fail_job_url}}'
+        data = {
+            csrfmiddlewaretoken: '{{ csrf_token }}',
+			'Note': failedReason,
+        };
+    }
+    else if(form == 6) {
+	var get_id = document.getElementById('selected_opt'); 
+	var failedReasonId = get_id.options[get_id.selectedIndex].value;
+	var failedReason = get_id.options[get_id.selectedIndex].text;	
+	if(failedReasonId == 3) failedReason = isValidNote(jQuery('#MVfailNote').val());	
+        url = '{{fail_job_url}}'
+        data = {
+            csrfmiddlewaretoken: '{{ csrf_token }}',
+            'Note': failedReason,
+        };
+    }
+    jQuery.ajax({
+        type: "POST",
+        url: url,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        dataType: 'json',
+        data: data,
+        success: function(res) {
+            jQuery('#inline_content').html(res);
+            if(res.status == 1)
+
+            jQuery('#create_job_div').fadeOut(2000);
+            jQuery('#job_message').hide();
+            jQuery('#job_message').html("<p class='success-msg list-group-item list-group-item-success'><span class='glyphicon glyphicon-check'></span>&nbsp; <span>Notification : <span/>" + res.msg + "</p>").show().delay(1000).fadeOut(2000);
+
+        },
+        complete: function() {
+            me.data('requestRunning', false);
+        }
+    });
+    jQuery('#job_message').fadeIn(1000, function() {
+        jQuery('#job_message').delay(2000).fadeOut(2000);
+    });
+}
+function startNewJobPopUp(res){ 
+
+ jQuery.colorbox({innerHeight:350,innerWidth:650,className: 'pkg_list_class',html:'<div class="pkglstFrm1"><h4>Create New QH Job:</h4><hr/> <form id="create_job_form" name="create_job_form" type="get" action="">  <table class="lastStepTbl"><tr><td><h4>Select frequency:</h4></td><td class="text-center"><div class="update_frequency_select"> <select id="update_frequency" class="input-style" data-style="btn-primary"><option value>-- Select --</option>  <option value="H" >Hourly</option> <option value="D">Daily</option> <option value="W" >Weekly</option> <option value="F" >Fortnightly</option> <option value="N">Monthly</option> <option value="P">Patch</option> <option value="M" >Major</option></select></div></td></tr></table><br><table class="lastStepTbl"><tr><td><h4>Select Sig Type:</h4></td><td class="text-center"><div class="type_list"> '+jQuery('#type_list').html()+' </div></td></tr></table><br>'+jQuery('#package_list').html()+'<div class=textarea_div><table class="lastStepTbl additional_packagetbl"><tr><td><h4>Additonal Package :</h4></td><td><textarea id="additional_package" name="additional_package"></textarea><div class="err">Invalid Package details</div></td></tr></table></div><div class="packagelist_stage"><button id="showAdPackage" class="navbar-inverse shadow-in" type="button" >Add New Package</button><button id="newqhjob"  type="button" class="navbar-inverse shadow-in" >Create New QH Job</button><span id="newqhjob_error" class="error"></span></div></form></div>', escKey:true, overlayClose:true,onLoad: function() {jQuery('#cboxClose').show();}});
+ //jQuery.colorbox({innerHeight:350,innerWidth:650,className: 'pkg_list_class',html:'<div class="pkglstFrm1"><h4>Create New QH Job:</h4><hr/> <form id="create_job_form" name="create_job_form" type="get" action="">  <table class="lastStepTbl"><tr><td><h4>Select frequency:</h4></td><td class="text-center"><div class="update_frequency_select"> <select id="update_frequency" class="input-style" data-style="btn-primary"><option value>-- Select --</option>  <option value="H" >Hourly</option> <option value="D">Daily</option> <option value="W" >Weekly</option> <option value="F" >Fortnightly</option> <option value="N">Monthly</option> <option value="P">Patch</option> <option value="M" >Major</option></select></div></td></tr></table><br><table class="lastStepTbl"><tr><td><h4>Select Sig Type:</h4></td><td class="text-center"><div class="type_list"> '+jQuery('#type_list').html()+' </div></td></tr></table><br><table class="lastStepTbl"><tr><td><h4>Skip package:</h4></td><td class="text-center"><div class="skip-package"> <input type="checkbox" id="checkAll" name="checkAll" onclick="checkAllids(this);" checked> </div></td></tr></table><br>'+jQuery('#package_list').html()+'<div class=textarea_div><table class="lastStepTbl additional_packagetbl"><tr><td><h4>Additonal Package :</h4></td><td><textarea id="additional_package" name="additional_package"></textarea><div class="err">Invalid Package details</div></td></tr></table></div><div class="packagelist_stage"><button id="showAdPackage" class="navbar-inverse shadow-in" type="button" >Add New Package</button><button id="newqhjob"  type="button" class="navbar-inverse shadow-in" >Create New QH Job</button><span id="newqhjob_error" class="error"></span></div></form></div>', escKey:true, overlayClose:true,onLoad: function() {jQuery('#cboxClose').show();}});
+
+  jQuery('#showAdPackage').click(function(){
+		jQuery('#showAdPackage').hide();
+		jQuery('#additional_package').show();
+		jQuery('.additional_packagetbl').show();
+	});
+	jQuery('#newqhjob').click(function(){
+	//jQuery(".packagelist_stage").html('<p><h4>Loading Please Wait...</h4><span class="LoadingImage packagelistLoadingImage"></span></p>');
+	var checkBoxs = jQuery('#colorbox table#packagebox  input[type=checkbox]:checked:checked').map(function(){  if (this.name != "checkAll") { return this.value; } }).get();	 
+ 
+   jQuery('.lastStepTbl').removeClass('error');
+	   jQuery('.lastStepTbl .err').hide();
+	var text = jQuery("#additional_package").val();	
+	var matchForSpaces = /\s/g.exec(text);	
+	if(matchForSpaces){
+	    //#jQuery.colorbox({innerWidth:600,html:'<h4>Error occurred :</h4><hr/> <span>Notification : Please remove spaces / new line from additional package</span>', escKey:true, overlayClose:true,className: 'errorBox',onLoad: function() {jQuery('#cboxClose').show();}});
+	    alert('Please remove spaces / new line from additional package !');
+		return;
+	}	
+	if (jQuery('#update_frequency').val() == ''){
+		//jQuery.colorbox({innerWidth:600,html:'<h4>Error occurred :</h4><hr/> <span>Notification : Please select update frequency</span>', escKey:true, overlayClose:true,className: 'errorBox',onLoad: function() {jQuery('#cboxClose').show();}});
+		alert('Please  select update frequency !');
+		return;
+	}
+	alert(checkBoxs);
+	startNewJob(1,checkBoxs);
+  });
+}
+function startNewJob(form = 1,checkBoxs=''){
+return;
+             var me = jQuery('#job-section');
+            if(me.data('requestRunning')) {
+               return;
+            }
+            me.data('requestRunning', true);
+            getAllAbort();
+            jQuery('#job_message').hide();
+            jQuery('#job_message').html("<p class='success-msg list-group-item list-group-item-success'><span class='glyphicon glyphicon-check'></span> &nbsp;<span>Notification : <span/>Your request is processing...</p>").show().delay(3000).fadeOut(2000);
+            if(form == 1) {                
+                url = '{{create_job_url_qh_1}}'
+                if(jQuery.trim(jQuery('#additional_package').val()) != ''){
+                       var additional_package = jQuery('#additional_package').val();
+                }else{
+                    var additional_package = 'NA';
+                }
+				Package_List = JSON.stringify(checkBoxs)
+				if(JSON.stringify(checkBoxs).length == 2){
+				Package_List = additional_package
+				}
+				Sig_type_data = '' //Update Type Validation
+				Is_incremental = 0						
+				if(jQuery("span.sigTypespan select").multipleSelect("getSelects").length != 0){
+					//var option_all = $("#create_job_form select#SigTypeSelect option:selected").map(function () {return $(this).text(); }).get().join(',');
+					Sig_type_data = jQuery("span.sigTypespan select").multipleSelect("getSelects", "text");
+					Is_incremental = 1
+				}
+                data = {
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                    'Package_List':  Package_List,
+                    'Update_frequency': jQuery('#update_frequency').val(),                    
+                    'Sig_type': Sig_type_data,                    
+                    'Is_incremental': Is_incremental,                    
+                    'additional_package': additional_package,
+                   };
+            }
+            else if(form == 4) {
+                jQuery(".MnlJobMsg").html('').hide();
+                url = '{{create_job_url_qh_2}}'
+                data = {
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                };
+            }
+            else if(form == 6) {
+				NoteValue = isValidNote(jQuery('#Note').val());	
+                url = '{{create_job_url_qh_3}}'
+                jQuery(".MnlJobMsg").html('').hide();
+                data = {
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                    'Note': NoteValue
+                };
+            }
+            jQuery('#create_job_div').hide();
+            jQuery.ajax({
+                type: "POST",
+                url: url,
+                dataType: 'json',
+                data: data,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                crossDomain: true,
+                success: function(res) {
+                    jQuery('#inline_content').html(res);
+                    if(res.status == 1) {
+                        jQuery('#job_message').hide();
+						
+                        jQuery('#job_message').html("<p class='success-msg list-group-item list-group-item-success'><span class='glyphicon glyphicon-check'></span> &nbsp;<span>Notification : <span/>" + res.msg + "</p>").show().delay(3000).fadeOut(2000);
+                    } else {
+                        jQuery('#job_message').hide();		
+						jQuery.colorbox({innerWidth:880,fixed: true,html:"<h4>Error occurred :</h4><hr/> <span>Notification : " + res.msg + "<span/>", escKey:true,className: 'errorBox', overlayClose:true,onLoad: function() {jQuery('#cboxClose').show();}});					
+                    }
+                },
+                complete: function() {
+                    me.data('requestRunning', false);
+                }
+            });
+            jQuery(this).prop('disabled', true)
+}
+
+function getAllAbort() {
+    clearInterval(getPipelineTime);
+    jQuery.ajaxQ.abortAll();
+    getPipeline(true);
+    clearInterval(verifyJobTime);
+    verifyJob(true);
+}
+jQuery.ajaxQ = (function() {
+    var id = 0,
+        Q = {};
+    jQuery(document).ajaxSend(function(e, jqx) {
+        jqx._id = ++id;
+        Q[jqx._id] = jqx;
+    });
+    jQuery(document).ajaxComplete(function(e, jqx) {
+        delete Q[jqx._id];
+    });
+    return {
+        abortAll: function() {
+            var r = [];
+            jQuery.each(Q, function(i, jqx) {
+                r.push(jqx._id);
+                jqx.abort();
+            });
+            return r;
+        }
+    };
+
+})();
+
+function verifyJob(response = false) {
+    var me = jQuery('#job-section');
+    if(response == true)
+        me.data('verifyJob', true);
+    if(me.data('verifyJob') == true)
+    {
+        me.data('verifyJob', false);
+        jQuery.ajax({
+            type: "POST",
+            url: '{{verify_job_jenkins_ajax}}',
+            dataType: 'json',
+            async: true,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: {
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+            },
+            success: function(res)
+            {
+                me.data('verifyJob', true);
+                verifyJobTime = setTimeout(function() {verifyJob(); }, 15000);}
+        });
+    }
+}
+function getCurrentJobDetails(response = false,selectedJobId ) {
+        jQuery.ajax({
+            type: "POST",
+            url: '{{current_job_details_ajax_url}}',
+            dataType: 'json',
+            async: true,
+            data: { csrfmiddlewaretoken: '{{ csrf_token }}', 'selectedJobId': selectedJobId, },
+             success: function(data){
+
+             jQuery('.active_job').html(data);}
+        });
+}
+
+function isValidNote(str){
+return str.replace(/[^a-zA-Z0-9 ]/g, ""); 
+}
+
+function checkAllids(thisVal){
+  if($(thisVal).is(':checked')){
+        $('#create_job_form input:checkbox').prop('checked', true);
+  }else{
+    $('#create_job_form input:checkbox').prop('checked', false);
+  }
+}
+</script>
+{% endblock %} 

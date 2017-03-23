@@ -1,0 +1,4 @@
+18:10:19,858.013391494751 213 requests.packages.urllib3.connectionpool  INFO Starting new HTTP connection (1): 10.10.10.237
+18:10:19,964.0772342681885 395 requests.packages.urllib3.connectionpool DEBUG "GET /api/python HTTP/1.1" 200 390
+18:10:19,971.1363315582275 213 requests.packages.urllib3.connectionpool  INFO Starting new HTTP connection (1): 10.10.10.237
+18:10:20,50.30035972595215 395 requests.packages.urllib3.connectionpool DEBUG "GET /api/python HTTP/1.1" 200 390

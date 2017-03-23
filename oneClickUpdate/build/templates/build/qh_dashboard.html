@@ -1,0 +1,36 @@
+<ol class="breadcrumb"><li class="active"><i class="fa fa-dashboard"></i> Dashboard</li>
+	<span class="pull-right">
+		<label for="state_dateRange">Select Date Range: </label> 
+		<input id="state_dateRange" size="30" value="{% if request.GET.from  %}{{ request.GET.from  }}{% else %}{{from}}{% endif %} to {% if request.GET.to  %}{{ request.GET.to  }}{% else %}{{to}}{% endif %}">	
+		<input type="button" id="btnShow" value="Show"   class="btn btn-primary" /> 
+		<input type="button" id="reset" value="reset"   class="btn btn-primary" /> 
+	</span>	
+</ol>
+ <div class="nav-md">
+    <div class="container body" >
+      <div class="main_container">		
+		<div class="col-md-12 col-sm-12 col-xs-12"><hr></div>
+		<div class="col-md-12 col-sm-12 col-xs-12">
+		  {% include "build/statstics/summery.html" %}
+		</div>		
+     </div>
+   </div>
+</div>
+<script>//range with validations 
+jQuery("#btnShow").click(function() {
+    if (jQuery("#state_dateRange").val().length == 0) {
+        alert('All fields are required');
+    } else {
+        var res = jQuery("#state_dateRange").val().replace(" to ", "&to=");
+        window.location.replace('http://' + window.location.host + '/statistics/{{type}}/?t={{pageName}}&from=' + res + '');
+    }
+})
+jQuery("#reset").click(function() {
+    window.location.replace('http://' + window.location.host + '/statistics/{{type}}/?t=dashboard');
+
+})
+var a = moment("{% if request.GET.from  %}{{ request.GET.from  }}{% else %}{{from}}{% endif %} ", 'YYYY-M-D');
+var b = moment("{% if request.GET.to  %}{{ request.GET.to  }}{% else %}{{to}}{% endif %}", 'YYYY-M-D');
+var diffDays = b.diff(a, 'days');
+jQuery(".recordsTill").html('(' + diffDays + ' Days Records)');
+</script>

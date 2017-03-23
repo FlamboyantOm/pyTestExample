@@ -1,0 +1,77 @@
+{% extends "build/base.html" %}
+{% block content %}
+<div > {% load staticfiles %}
+  <link href="{% static 'build/css/dataTables.min.css' %}" rel="stylesheet">
+  <script src="{% static 'build/js/dataTables.min.js' %}"></script>
+  <table id="buildEngine" class="display shadow-in" cellspacing="0" >
+    <thead>
+      <tr><th>Job ID</th><th>Created Date</th><th>Created By</th><th>Note</th><th>VDB</th><th>IsBuildEngine</th></tr>
+    </thead>
+    <tfoot>
+      <tr><th>Job ID</th><th>Created Date</th><th>Created By</th><th>Note</th><th>VDB</th><th>IsBuildEngine</th></tr>
+    </tfoot>
+  </table>
+  {% url 'build:build_engine_mgt_ajax' type=type key=0 action=0 as build_engine_mgt_ajax %}
+  {% url 'build:build_engine_mgt_ajax' type=type as build_engine_mgt_checkbox_ajax %}
+  {% url 'build:current_job_details_ajax' as current_job_details_ajax_url %}
+  <script>
+  function triggerCheckedAjax (key,action){
+        jQuery.ajax({
+                  type: "POST",
+                  url: '/build-engine/ajax/{{type}}/'+key+'/'+action+'/',
+                  dataType: 'json',
+                  data: {
+                      csrfmiddlewaretoken: '{{ csrf_token }}',
+                  },
+                  success: function(res) {
+                      var ref = jQuery('#buildEngine').DataTable();
+                         ref.ajax.reload();
+                         jQuery(window).colorbox.close();
+                  }
+              });
+  }
+
+
+  function triggerChecked (key,action,jobBoxData){
+  getCurrentJobDetails(true,key); // call the selected job details ajax
+   if(action == 0 )
+     type_action = 'uncheck';
+    else
+     type_action = 'check';
+          jQuery.colorbox({innerWidth:880,innerHeight:340,html:' <div class="triggerChecked"> <h3 class="heading"> <span class="titleCase"> '+type_action+' </span>  Job #'+key+'  as Build Engine  </h3>  <div id="JobDetails"></div> <center></br> <p>Are you sure you want to <b>'+type_action+'</b> mark build engine for Job <b>#'+key+'</b> </p> <table > <tr> <td ><button class="navbar-inverse shadow-in"  onclick="triggerCheckedAjax('+key+','+action+')">Yes</button> </td> <td > <button class="navbar-inverse shadow-in"  onclick="closePopup()">No</button></td> </tr> </table> </center>  </div> ', escKey:true, onLoad: function() {}});
+    }
+    function closePopup(){
+      jQuery(window).colorbox.close();
+    }
+jQuery(document).ready(function() {
+    jQuery('#buildEngine').DataTable( {
+        "processing": true,
+        "serverSide": true,
+		"order": [[ 0, "desc" ]],
+        "ajax": {
+            "url": "{{build_engine_mgt_ajax}}",
+         },
+	 "columns": [
+            { "data": "JobID"},
+            { "data": "CreatedDate","orderable": false  },
+            { "data": "UserName" },
+            { "data": "Notes" },
+            { "data": "VDB" },
+            { "data": "IsBuildEngine" },
+        ],
+    } );
+} );
+function getCurrentJobDetails(response = false,selectedJobId ) {
+        jQuery.ajax({
+            type: "POST",
+            url: '{{current_job_details_ajax_url}}',
+            dataType: 'json',
+            async: true,
+            data: { csrfmiddlewaretoken: '{{ csrf_token }}', 'selectedJobId': selectedJobId, }, success: function(data){jQuery('#JobDetails').html(data);}
+        });
+}
+</script>
+
+</div>
+
+{% endblock %}

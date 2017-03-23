@@ -1,0 +1,6 @@
+18:11:34,799.4875907897949 373   get_release_status  INFO Start.
+18:11:34,802.5896549224854 382   get_release_status  INFO returning - error_code : 0 status : 0 vdb : 2016-09-30 11:11:11
+18:11:38,144.70386505126953 213 requests.packages.urllib3.connectionpool  INFO Starting new HTTP connection (1): 10.10.10.237
+18:11:38,256.84642791748047 395 requests.packages.urllib3.connectionpool DEBUG "GET /api/python HTTP/1.1" 200 390
+18:31:34,383.2364082336426 213 requests.packages.urllib3.connectionpool  INFO Starting new HTTP connection (1): 10.10.10.237
+18:31:34,473.3095169067383 395 requests.packages.urllib3.connectionpool DEBUG "GET /api/python HTTP/1.1" 200 390

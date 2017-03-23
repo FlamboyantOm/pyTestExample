@@ -1,0 +1,8 @@
+{% extends "build/base.html" %}
+{% block content %}
+<div class="current_job">
+    {% if error %}
+    <h3 class="error">{{error}}</h3>
+{% endif %}
+</div>
+{% endblock %}

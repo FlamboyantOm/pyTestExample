@@ -1,0 +1,6 @@
+12:27:41, 110                 main  INFO Start.
+12:27:41, 127                 main  INFO Connection established! host '10.10.3.176', user 'manoj', database 'jenkins'
+12:27:41,  35 RetrieveToBeReleasePkgListInternal  INFO Start.
+12:27:41,  76 RetrieveToBeReleasePkgListInternal  INFO Exit.
+12:27:41, 143                 main  INFO pkg_list = ['pkg_140916181040833_224_5093.zip', 'pkg_140916182023284_225_5093.zip', 'pkg_160916131649505_230_5096.zip', 'pkg_160916154525749_238_5111.zip', 'pkg_160922114650047_287_5359.zip']
+12:27:41, 151                 main  INFO Exit.

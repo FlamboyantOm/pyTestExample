@@ -1,0 +1,70 @@
+{% extends "build/base.html" %}
+{% block content %}
+<div class="current_job row">
+<h5 >{{msg|safe}}</h5>
+ {% for group in user.groups.all %}
+	{% if group.name != 'ViewAndWrite' %}
+	    <div class="col-md-6">		
+		<table class="shadow-in qh-menu-table" style="width:100%">
+			<tr><th><h4>{{ group.name }} </h4></th></tr>	
+			<tr><td><h5><a href="{{ group.name|lower }}">Create / Process {{ group.name }} Job </a><span class="CurrentRunningSymbol" id="newActiveStatus{{ group.name }}"></span></h5></td></tr>
+			{% if group.name != 'QH' %}			
+			<tr><td><h5><span id="revertRedirect{{ group.name }}"><a href="/revert/{{ group.name|lower }}/list/">Revert / Process Existing {{ group.name }} Job </a></span><span class="CurrentRunningSymbol" id="revertActiveStatus{{ group.name }}"></span></h5></td></tr>
+			{% endif %}
+			<tr><td><h5><a href="/history/{{ group.name|lower }}" >{{ group.name }} Job History</a></h5></td></tr>
+			<tr><td><h5><a href="/build-engine/{{ group.name|lower }}" >Mark Build Engine For {{ group.name }}  </a></h5></td></tr>
+			<tr><td><h5><a href="/statistics/{{ group.name|lower }}/?t=dashboard" >{{ group.name }} Job Statistics</a></h5></td></tr>
+		</table>
+			</div>
+	{% endif %}
+{% endfor %}
+{% url 'build:check_current_status_ajax' as current_job_status_ajax_url %}
+<script>
+jQuery(document).ready(function() {
+    getJobStatus(true);
+
+});
+errorCnt=0;
+function getJobStatus(response = false) {
+	     	jQuery.ajax({
+            type: "POST",
+            url: '{{current_job_status_ajax_url}}',
+            dataType: 'json',
+            async: true,
+            data: { csrfmiddlewaretoken: '{{ csrf_token }}',},
+            success: function(data){
+				for (var i in data){
+					var RunningSymbol = '<span>&#9881;</span>';
+					if(data[i] != ''){						
+						var Jobtype = data[i]['jobType'];
+						var processType = data[i]['processType'];
+						var jobId = data[i]['id'];						
+						jQuery('#newActiveStatus'+Jobtype).html('');
+						jQuery('#revertActiveStatus'+Jobtype).html('');
+						if(processType == '1'){ jQuery('#newActiveStatus'+Jobtype).html(RunningSymbol); }else 
+						if(processType == '3'){ jQuery('#revertActiveStatus'+Jobtype).html(RunningSymbol);
+							if(Jobtype == 'QH'){JobtypePass = 1}else{JobtypePass = 2}
+						jQuery('#revertRedirect'+Jobtype).html("<a onclick='check_running_job("+JobtypePass+");' >Revert / Process Existing "+Jobtype+" Job </a>");
+						}
+					} 
+				}
+				getJobStatusTime = setTimeout(function() {getJobStatus();}, {{request.config.running_job_ajax_time}});
+			},
+			error: function(response){
+
+				if (errorCnt > 5)location.reload();
+				getJobStatusTime = setTimeout(function() {getJobStatus();}, {{request.config.running_job_ajax_time}});
+			}
+
+        });		
+}
+function check_running_job(Jobtype){  if(Jobtype == 1){Jobtype = 'qh'}else{Jobtype = 'e2'} window.location.replace('http://'+window.location.host+'/revert/'+Jobtype);  }				
+</script>
+  <div id="job_message"></div>
+  <div id="create_job_div">
+  </div>
+</div>
+<div style='display:none'>
+  <div id='inline_content' style='padding:10px; background:#fff;'> </div>
+</div>
+{% endblock %} 

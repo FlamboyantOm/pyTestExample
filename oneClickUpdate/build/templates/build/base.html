@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{% block title %}{{request.meta_title}} {% endblock %}</title>
+      {% load staticfiles %}
+      <link rel="shortcut icon" type="image/png" href="{% static 'build/images/favicon.ico' %}"/>
+		<link href="{% static 'build/css/bootstrap.min.css' %}" rel="stylesheet">
+		<link href="{% static 'build/css/bootstrap-theme.css' %}" rel="stylesheet">
+        <link href="{% static 'build/css/colorbox.css' %}" rel="stylesheet">
+		<link rel="stylesheet" type="text/css" href="{% static 'build/css/style.css' %}" />
+		<script type="text/javascript" src="{% static 'build/js/jquery-1.12.1.min.js' %}"></script>
+		<script src="{% static 'build/js/bootstrap.min.js' %}"></script>
+		<script src="{% static 'build/js/jquery.colorbox-min.js' %}"></script>
+	<link href="{% static 'build/css/dataTables.min.css' %}" rel="stylesheet">
+	<script src="{% static 'build/js/dataTables.min.js' %}"></script> 
+  </head>
+   <body role="document">
+<div id="myOverlay">
+    <div class="loadingGIF">Please wait...</div>
+</div>
+<header>
+ <nav class="navbar navbar-inverse navbar-fixed-top">
+	<noscript>
+		 <div style="font-family: sans-serif;position: fixed; top: 12%;left: 0;width: 100%;z-index: 1000;text-align: center;font-weight: bold;font-size: 120%;color: #FFF;background-color: #AE0000;padding: 5px 0 5px 0;"> 
+			For full functionality of this site it is necessary to enable JavaScript
+		 </div>
+	</noscript>	
+      <div class="container">  
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/"><div id="logo">{{request.logo_heading}}</div></a>
+        </div>
+
+           <div id="navbar" class="navbar-collapse collapse"  style="float:right;visibility:hidden;" >
+          <ul class="nav navbar-nav">
+
+            <li class="heading-text logged-in"> Logged in as <b>{{ user.get_username.title }}</b></li>
+            <li><a href="{{ BASE_URL }}/logout">Logout</a></li>
+
+            <li class="heading-text logged-in"><div id="txt"></div></li>
+          </ul>
+        </div>
+		{% if user.is_authenticated %}
+            <script type="text/javascript">
+                jQuery('.container #navbar').css("visibility","visible");
+            </script>
+
+     	{% endif %}
+
+      </div>
+    </nav>
+</header>
+<main>
+	<div class="container theme-showcase" role="main">
+      <div class="page-header">
+      {% if user.is_authenticated %}
+	  <h1>{% block block_title %}{{request.title}} {% endblock %}</h1>
+   {% block block_breadcrumb %}<ol class="breadcrumb"><li id="breadcrumb"><a href="/">Home</a></li>
+{% if request.breadcrumb %}
+{% for breadcrumb in request.breadcrumb.items  %}
+{% if breadcrumb.1 != '' %}
+      <li> <a href={{breadcrumb.1}} >{{breadcrumb.0}}</a> </li>
+{% else %}
+          <li>  {{breadcrumb.0}} </li>
+{% endif %}
+{% endfor %}{% endif %}
+      </ol>{% endblock %}
+	  {% endif %}
+
+      </div>
+
+      <div class="row">
+        <div class="col-md-12">
+            {% block content %}{% endblock %}  </div>
+      </div>
+
+ </div>
+</main>
+<footer>
+    <div id="footer"> © 2016-2017 Quick Heal Technologies </div>
+</footer>
+
+   <a href="#" class="scrollToTop"><span class="glyphicon glyphicon-chevron-up"></span></a></span></a>
+    </body>
+</html>
+<script type="text/javascript">
+jQuery(document).ready(function(){
+	jQuery(window).scroll(function(){
+		if (jQuery(this).scrollTop() > 100) {
+			jQuery('.scrollToTop').fadeIn();
+		} else {
+			jQuery('.scrollToTop').fadeOut();
+		}
+	});
+	jQuery('.scrollToTop').click(function(){
+		jQuery('html, body').animate({scrollTop : 0},800);
+		return false;
+	});
+});
+ </script>

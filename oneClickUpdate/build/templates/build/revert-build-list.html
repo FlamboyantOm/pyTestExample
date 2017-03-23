@@ -1,0 +1,68 @@
+{% extends "build/base.html" %}
+{% block content %}
+<div > {% load staticfiles %}
+  <table id="revertBuildHistory" class="display shadow-in" cellspacing="0" >
+     <thead><tr><th>Job ID</th> <th>Created Date</th> <th>Created By</th> <th>Note</th><th>VDB</th><th>Job Type</th><th>Revert</th></tr></thead>
+    <tfoot><tr><th>Job ID</th> <th>Created Date</th> <th>Created By</th> <th>Note</th><th>VDB</th><th>Job Type</th><th>Revert</th></tr></tfoot>
+  </table>
+{% url 'build:create_job' type=type step='4' as  create_job_url_4 %}
+{% url 'build:current_job_details_ajax' as current_job_details_ajax_url %}
+{% url 'build:revert_list_ajax' type=type as revert_list_ajax %}
+  <script>		
+jQuery(document).ready(function() {
+    jQuery('#revertBuildHistory').DataTable( {
+        "processing": true,
+        "serverSide": true,
+		"order": [[ 0, "desc" ]],
+        "ajax": { "url": "{{revert_list_ajax}}", },
+	 "columns": [ 
+			{ "data": "JobID" }, { "data": "CreatedDate" }, { "data": "UserName" }, { "data": "Note" }, { "data": "VDB" },
+			//{ "data": "IsBuildEngine" },
+			{"data" : "Flag"}, { "data": "Revert" },
+		],
+    } );
+} );		
+						
+function job_process_confirm(selectedJobId,revertRunningId,jobRunningId,currentJobData){
+	if(revertRunningId == 0 && jobRunningId == 0){
+			getCurrentJobDetails(true,selectedJobId);
+			jQuery.colorbox({innerWidth:800,innerHeight:420,fixed: true,html:'<div class="build6 "><h3> Job #'+selectedJobId+' is selected to be reverted </h3><hr><h4>Summary for Job #'+selectedJobId+' </h4>  <div id="JobDetails"></div> <center><div><h4>Do you want to proceed revert process for Job #'+selectedJobId+'? </h4> <table class="revertProceedPopup"><tr><td><button class="navbar-inverse shadow-in" onclick="create_job_process('+selectedJobId+')">Yes</button> </td><td> <button class="navbar-inverse shadow-in" onclick="noRevertProcess()">No</button></td></tr></table></div> </center></form></div>', escKey:true, overlayClose:true,onLoad: function() {jQuery('#cboxClose').show();}});
+	}else if(jobRunningId != 0){
+			getCurrentJobDetails(true,jobRunningId);
+			jQuery.colorbox({innerWidth:800,innerHeight:430,fixed: true,html:'<div class="build6 "><h3>Unable To Process Revert Request</h3><hr><h4> Currently Job  #'+jobRunningId+' is running as below :</h4><br/> <div id="JobDetails"></div> <div><center><h4> Do you want to view?</h4> <div><button class="navbar-inverse shadow-in button" onclick="check_normal_running_job('+jobRunningId+')"> View </button>&nbsp;<button class="navbar-inverse shadow-in button" onclick="noRevertProcess()">Cancel</button></div></center> </div> </form></div>', escKey:true, overlayClose:true, onLoad: function() {jQuery('#cboxClose').show();}});
+	}else{
+			check_running_job(revertRunningId);
+		  }
+}
+
+function noRevertProcess(){  location.reload();  }
+function check_running_job(revertRunningId){  window.location.replace('http://'+window.location.host+'/revert/{{type}}');  }
+function check_normal_running_job(jobRunningId){  window.location.replace('http://'+window.location.host+'/{{type}}');  }
+function create_job_process(selectedJobId) {
+	jQuery(window).colorbox.close();
+    var me = jQuery('#job-section');
+    if(me.data('requestRunning')) { return; }
+    me.data('requestRunning', true);
+    jQuery('#job_message').hide();
+    jQuery('#job_message').html("<p class='success-msg list-group-item list-group-item-success'><span class='glyphicon glyphicon-check'></span> &nbsp;<span>Notification : <span/>Your request is processing...</p>").show().delay(3000).fadeOut(2000);
+	url = '{{create_job_url_4}}',
+	data = { csrfmiddlewaretoken: '{{ csrf_token }}', 'JobId': selectedJobId}
+    jQuery.ajax({
+        type: "POST", url: url, dataType: 'json', data: data, headers: { 'X-Requested-With': 'XMLHttpRequest' }, crossDomain: true, success: function(res) {window.location.replace('http://'+window.location.host+'/revert/{{type}}');},
+        complete: function() { me.data('requestRunning', false); }
+    });
+    jQuery(this).prop('disabled', true)
+}
+
+function getCurrentJobDetails(response = false,selectedJobId ) {
+        jQuery.ajax({
+            type: "POST",
+            url: '{{current_job_details_ajax_url}}',
+            dataType: 'json',
+            async: true,
+            data: { csrfmiddlewaretoken: '{{ csrf_token }}', 'selectedJobId': selectedJobId, }, success: function(data){jQuery('#JobDetails').html(data);}
+        });    
+}
+</script>
+</div>
+{% endblock %}

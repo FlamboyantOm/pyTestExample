@@ -1,0 +1,199 @@
+.container{ padding-left: 0px;}
+body{color: #73879C;}
+
+
+ @media (min-width: 768px)
+.tile_count .tile_stats_count .count {font-size: 40px;}
+.tile_count .tile_stats_count .count {font-size: 30px;line-height: 47px;font-weight: 600; overflow: auto;}
+.tile_count .tile_stats_count_user .count {font-size: 25px;line-height: 47px;font-weight: 600; overflow: auto;}
+.green {color: #1ABB9C;}
+.red {color: #E74C3C;}
+Inherited from div.col-md-2.col-sm-4.col-xs-6.tile_stats_count.tile_count .tile_stats_count.tile_stats_count_user {border-bottom: 1px solid #D9DEE4;padding: 0 10px 0 20px;text-overflow: ellipsis;overflow: hidden;white-space: nowrap;position: relative;}
+ body {
+    font-family: "Helvetica Neue",Roboto,Arial,"Droid Sans",sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.471;
+}
+.tile_count .tile_stats_count: {
+    border-bottom: 1px solid #d9dee4;
+    overflow: hidden;
+    padding: 0 10px 0 20px;
+    position: relative;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.tile_count .tile_stats_count,.tile_count .tile_stats_count_user  {
+    border-bottom: 1px solid #d9dee4;
+    overflow: hidden;
+    padding: 0 10px 0 20px;
+    position: relative;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.tile_count .tile_stats_count,.tile_count .tile_stats_count_user {
+    border-bottom: 0 none;
+    margin-bottom: 10px;
+    margin-top: 10px;  	
+}
+.tile_stats_count_first{
+    border-bottom: 0 none;    
+    margin-top: 10px;  	
+    padding-left: 10px;  	
+}
+.tile_count .tile_stats_count::before {
+    border-left: 1px solid #adb2b5;
+    content: "";
+    height: 100px;
+    left: 0;
+    margin-top: 10px;	
+    position: absolute;
+}
+.tile_count .tile_stats_count_user::before {
+    border-left: 1px solid #adb2b5;
+    content: "";
+    height: 100px;
+    left: 0;
+    margin-top: 10px;	
+    position: absolute;
+}
+.right_col{
+	background-color: #f5f5f5;
+	border: 1px solid #adb2b5; 
+}
+.bg-green {
+    background: #1ABB9C !important;
+    border: 1px solid #1ABB9C !important;
+    color: #fff;
+}
+.progress.progress_sm .progress-bar {
+    height: 30px !important;
+}
+.progress .progress-bar {
+    position: absolute;
+    overflow: hidden;
+    line-height: 20px;
+}
+.progress {
+    border-radius: 0;
+}
+.progress {
+    position: relative;
+}
+canvas.pieChart {margin-left: 25%;}
+
+.margin-5px{ margin:5px;}
+body{margin:0px; padding:0px;}
+#fl_menu{position:fix; top:0; left: 0; z-index:9999; width:50px; height:50px;}
+.floatingMenu{left: 0px; top:20%; position: fixed;z-index:9999;}
+#fl_menu .label{padding-left:3px; line-height:30px; font-family:"Arial Black", Arial, Helvetica, sans-serif; font-size:14px; font-weight:bold; background:#000; color:#fff; letter-spacing:3px;}
+
+#pieChart svg,  #pieChartUsers svg {height: 400px;}
+#lineChart svg, #lineChartSize svg {height: 500px;}
+.nv-label text{font-family: Droid Sans;}
+.sidenav { height: 100%; width: 0; position: fixed; z-index: 1; top: 0; left: 0; background-color: #111; overflow-x: hidden; transition: 0.5s; padding-top: 60px;	margin-top: 4%;}
+.sidenav a {padding: 8px 8px 8px 32px; text-decoration: none; font-size: 14px; color: #FFFFFF; display: block; transition: 0.3s}
+.sidenav a:hover, .offcanvas a:focus{ color: #111111;}
+.closebtn {position: absolute;top: 0;right: 20px;  font-size: 26px !important;margin-left: 50px;}
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 14px;}
+}
+.tableBorder{border:1px solid #EEE;}
+.PieChartCanvas{height:100px ;}
+.dashPieBox{padding:20px;margin-top:10px;}
+/*Dashboard scroll css*/
+
+.col-md-3 div.scroll {height: 500px;overflow-y: scroll; overflow-x: hidden;}
+.calendar-text {margin-top: .3em;  position: absolute; left: 15px; top: -10px; bottom: 0; text-align: center;}
+.chartHeader{color:#FFF;}
+.scrollbar{background: #F5F5F5;}
+.force-overflow{min-height: 200px;}
+.scrollbar::-webkit-scrollbar-track{-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);border-radius: 10px;background-color: #F5F5F5;}
+.scrollbar::-webkit-scrollbar{width: 12px;background-color: #F5F5F5;}
+.scrollbar::-webkit-scrollbar-thumb{border-radius: 10px;-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);background-color: #555;}
+ div.scroll {height: 1000px;overflow-y: hidden; overflow-x: scroll;}
+
+ div.horizontal-force-overflow{
+    margin-left: 30px;    
+    background: #F5F5F5;
+    overflow-x: scroll;
+    overflow-y: hidden;
+    margin-bottom: 25px;
+}
+.count .fa-3x{ font-size: 30px;}
+.chartAreaWrapper .iframe{margin-left:0px}
+.box {padding: 15px 60px 15px 15px;position: relative;}
+.yAxesTitle{padding-right: 19%; padding-top: 1%;}
+.xAxesTitle{ margin: 10px;padding-left: 35%;}
+.box > div { position: absolute; top: 0; right: 100%; white-space: nowrap; 
+    -webkit-transform: rotate(270deg);
+    -webkit-transform-origin: right top;
+    -moz-transform: rotate(270deg);
+    -moz-transform-origin: right top;
+    -ms-transform: rotate(270deg);
+    -ms-transform-origin: right top;
+    -o-transform: rotate(270deg);
+    -o-transform-origin: right top;
+    transform: rotate(270deg);
+    transform-origin: right top;
+}
+.iframe{margin-left:2%;}
+
+
+/*QH CSS*/
+
+div#mainTableInDetails_wrapper {    
+        margin: 0 auto;		
+    }
+table.dataTable tbody th,
+table.dataTable tbody td {
+    white-space: nowrap;
+}
+div#mainTableInDetails_wrapper table.dataTable tfoot th, table.dataTable tfoot td{max-width:60px; left:0px}
+
+.dataTables_scrollFootInner tfoot th, .dataTables_scrollFootInner tfoot td {padding: 15px 15px 10px 15px; font-weight:bold;font-size:14px;}
+#qhMinAvgMaxDetails td { background-color: #ffffff; }
+.dataTables_scrollHeadInner tbody th:nth-child(2)  { width: 11em; text-align:left;word-wrap: break-word;}
+.dataTables_scrollFootInner input{max-width:80px;}
+.dataTables_scrollFootInner input{max-width:80px;}
+.dataTables_scrollFootInner input#search_Created{max-width:100px;}
+.dataTables_scrollFootInner input#search_Ver{max-width:50px; margin-left:15px;}
+/*.dataTables_scrollFootInner input#search_JobID{max-width:20px;}
+.dataTables_scrollFootInner input#search_Ver,.dataTables_scrollFootInner input#search_1stFileCnt,.dataTables_scrollFootInner input#search_1stVer{max-width:40px;}
+.dataTables_scrollFootInner input#search_LastVer{max-width:40px;}
+.dataTables_scrollFootInner input#search_LastFileCnt{max-width:75px;}*/
+.dataTables_scrollFootInner input#search_SoloVersion, .dataTables_scrollFootInner input#search_FirstFileCnt, .dataTables_scrollFootInner input#search_LastFileCnt, .dataTables_scrollFootInner input#search_ActualTime, .dataTables_scrollFootInner input#search_DateCreated, .dataTables_scrollFootInner input#search_Diff1stDefSize{max-width:80px;}
+table.dataTable thead th, table.dataTable thead td {border-bottom: 1px solid #111; padding: 15px 15px 10px 15px}
+
+.dataTables_scrollHeadInner thead th, .dataTables_scrollHeadInner thead td {padding: 15px 15px 10px 15px; font-weight:bold;font-size:14px; width:10px}
+#qhMinAvgMaxDetails td { background-color: #ffffff; }
+.dataTables_scrollHeadInner input{max-width:80px;}
+.dataTables_scrollHeadInner input#search_JobID,.dataTables_scrollHeadInner input#search_Ver,.dataTables_scrollHeadInner input#search_1stFileCnt,.dataTables_scrollHeadInner input#search_1stVer{max-width:40px;}
+.dataTables_scrollHeadInner input#search_Created{max-width:40px;}
+.dataTables_scrollHeadInner input#search_LastVer{max-width:20px;}
+.dataTables_scrollHeadInner input#search_LastFileCnt{max-width:75px;}
+.dataTables_scrollHeadInner input#search_SoloVersion, .dataTables_scrollHeadInner input#search_FirstFileCnt, .dataTables_scrollHeadInner input#search_LastFileCnt, .dataTables_scrollHeadInner input#search_ActualTime, .dataTables_scrollHeadInner input#search_DateCreated, .dataTables_scrollHeadInner input#search_Diff1stDefSize{max-width:80px;}
+table.dataTable thead th, table.dataTable thead td {border-bottom: 1px solid #111; padding: 15px 15px 10px 15px}
+
+/*#makeMeScrollable table#mainTableInDetails *{}
+#makeMeScrollable{ width:auto; overflow: auto; padding-bottom:10px; }*/
+
+table#mainTableInDetails thead{ background: #F1F1F1 none repeat scroll 0 0;}
+.input-style{background-color: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
+    color: #555;
+    font-size: 14px;
+    height: 34px;
+    line-height: 1.42857;
+    padding: 6px 12px;
+    transition: border-color 0.15s ease-in-out 0s, box-shadow 0.15s ease-in-out 0s;}
+.float-right{float:right}
+.float-left{float:left}
+.dashboard-height{height:50px;}
+
+
+#mainTableInDetails_length,#mainTableInDetails_filter,#mainTableInDetails_info,#mainTableInDetails_paginate {}
