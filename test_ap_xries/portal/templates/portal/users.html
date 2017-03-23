@@ -1,0 +1,70 @@
+{% extends "portal/base.html" %}
+{% block content %}
+{% load staticfiles %}
+<link href="{% static 'portal/css/dataTables.min.css' %}" rel="stylesheet">
+<script src="{% static 'portal/js/dataTables.min.js' %}"></script>
+
+
+<table id="example" class="display" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th>Name</th>
+                 <th>Cluster</th>
+                <th>Signature</th>
+            </tr>
+        </thead>
+        <tfoot>
+            <tr>
+                <th>Name</th>
+                 <th>Cluster</th>
+                <th>Signature</th>
+            </tr>
+        </tfoot>
+        <tbody>
+
+        {% for user,info in data.items  %}
+         <tr>
+            <td><a href="/user/{{info.name}}/"><span class="glyphicon glyphicon-user"></span> {{info.name}}</a></td>
+
+              {% if info.cluster   %}
+              <td><span class="glyphicon glyphicon-ok "></span> Yes</td>
+              {% else %}
+              <td><span class="glyphicon glyphicon-remove "></span> No</td>
+              {% endif %}
+              {% if info.signature   %}
+              <td><span class="glyphicon glyphicon-ok "></span> Yes</td>
+              {% else %}
+              <td><span class="glyphicon glyphicon-remove "></span> No</td>
+              {% endif %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+<script>
+jQuery(document).ready(function() {
+
+    jQuery('#example tfoot th').each( function () {
+        var title = jQuery(this).text();
+        jQuery(this).html( '<input type="text" placeholder="Search '+title+'" />' );
+    } );
+    // DataTable
+    var table = jQuery('#example').DataTable();
+
+    // Apply the search
+    table.columns().every( function () {
+        var that = this;
+        jQuery( 'input', this.footer() ).on( 'keyup change', function () {
+            if ( that.search() !== this.value ) {
+                that
+                    .search( this.value )
+                    .draw();
+            }
+        } );
+    } );
+
+    jQuery('#example_filter').hide();
+} );
+</script>
+
+
+{% endblock %}

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{% block title %}{{request.meta_title}} {% endblock %}</title>
+
+        {% load staticfiles %}
+        <link rel="shortcut icon" type="image/png" href="{% static 'portal/images/favicon.ico' %}"/>
+        <link href="{% static 'portal/css/bootstrap.min.css' %}" rel="stylesheet">
+        <link href="{% static 'portal/css/bootstrap-theme.css' %}" rel="stylesheet">
+        <link href="{% static 'portal/css/colorbox.css' %}" rel="stylesheet">
+        <link href="{% static 'portal/css/bootstrap-select.min.css' %}" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="{% static 'portal/css/style.css' %}" />
+
+        <script type="text/javascript" src="{% static 'portal/js/jquery-1.12.1.min.js' %}"></script>
+        <script src="{% static 'portal/js/bootstrap.min.js' %}"></script>
+        <script src="{% static 'portal/js/jquery.colorbox-min.js' %}"></script>
+        <script src="{% static 'portal/js/bootstrap-select.min.js' %}"></script>
+
+        <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+        <script src="{% static 'portal/js/html5shiv.min.js' %}" ></script>
+        <script src="{% static 'portal/js/respond.min.js' %}" ></script>
+        <![endif]-->
+  </head>
+
+  <body role="document">
+          <header>
+          <!-- Navigation -->
+                <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+                        <noscript>
+                     <div class="noscript">
+                        For full functionality of this site it is necessary to enable JavaScript
+                     </div>
+                </noscript>
+
+            <div class="row">
+              <div class="col-lg-12">
+                  <div class="navbar-wrapper">
+                     <div class="container-fluid">
+                        <nav class="navbar navbar-fixed-top">
+                           <div class="container">
+                               <div class="navbar-header">
+                                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                                    <span class="sr-only">Toggle navigation</span>
+                                    <span class="icon-bar"></span>
+                                    <span class="icon-bar"></span>
+                                    <span class="icon-bar"></span>
+                                    </button>
+                                    <a class="navbar-brand" href="/" alt="{{request.meta_title}}" title="{{request.meta_title}}" ><img src="{% static 'portal/images/qh-logo.png' %}"></a>
+                               </div>
+                               <div id="navbar" class="navbar-collapse collapse">
+                                    <ul class="nav navbar-nav " id="topmenu">
+                                        <li id="home" ><a href="/" class="">Home</a></li>
+                                          {% if request.user.is_authenticated %}
+                                        <li class="dropdown" id="cluster">
+                                            <a href="#" class="dropdown-toggle " data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Cluster<span class="caret"></span></a>
+                                            <ul class="dropdown-menu">
+                                                <li  id="cluster_list" class=" dropdown">  <a href="/cluster/list/" class="dropdown-toggle "  role="button" >View Cluster</a> </li>
+                                                <li  id="cluster_new" ><a  href="/cluster/" >Add New Cluster</a></li>
+                                            </ul>
+                                        </li>
+                                        <li class="dropdown " id="signature">
+                                            <a href="#" class="dropdown-toggle " data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Signature<span class="caret"></span></a>
+                                            <ul class="dropdown-menu">
+                                                <li  id="signature_list" class=" dropdown">  <a href="/signature/list/" class="dropdown-toggle "  role="button" >View Signature</a> </li>
+                                                <!--<li  id="signature_new" ><a  href="/signature/" >Add New Signature</a></li>-->
+                                            </ul>
+                                        </li>
+                                        <li class="dropdown " id="Tag">
+                                            <a href="#" class="dropdown-toggle " data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Tag<span class="caret"></span></a>
+                                            <ul class="dropdown-menu">
+                                                <li  id="tag_list" class=" dropdown">  <a href="/tag/list/" class="dropdown-toggle "  role="button" >Tag List</a> </li>
+                                            </ul>
+                                        </li>
+
+                                         <li class="dropdown " id="Export">
+                                            <a href="#" class="dropdown-toggle " data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Export<span class="caret"></span></a>
+                                            <ul class="dropdown-menu">
+                                                <li  id="inx_view" class=" dropdown">  <a href="/filter_inx/" class="dropdown-toggle "  role="button" >Filter Signature</a> </li>
+                                            </ul>
+                                        </li>
+
+                                       <!-- <li id="users" class=" dropdown"><a href="#" class="dropdown-toggle active" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Users<span class="caret"></span></a>
+                                            <ul class="dropdown-menu">
+                                                <li id="users_main" ><a href="/users/">View Users ( All )</a></li>
+                                                <li id="users_cluster" ><a href="/users/?view=cluster/">Users ( Cluster Manager )</a></li>
+                                                <li id="users_signature" ><a href="/users/?view=signature/">Users ( Signature Manager )</a></li>
+                                            </ul>
+                                        </li>-->
+                                        {% endif %}
+                                    </ul>
+                                    <ul class="nav navbar-nav pull-right">
+                                        {% if request.user.is_authenticated %}
+                                        <!--<li class=" dropdown"><a href="/user/{{request.user}}" class="dropdown-toggle active " data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-user" ></span> Signed in as {{request.user}}</a></li>-->
+                                        <li class=" dropdown"><a href="/user/{{request.user}}" class="dropdown-toggle active "  role="button" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-user" ></span> Signed in as {{request.user}}</a>  </li>
+                                        <li class=""><a href="/logout/"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
+                                        {% else %}
+                                        <li class=""><a href="/login/"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+                                         {% endif %}
+                                    </ul>
+                               </div>
+                           </div>
+                        </nav>
+                     </div>
+                   </div>
+                 </div>
+             </div>
+            </nav>
+          </header>
+
+      <main>
+        <div class="container theme-showcase" role="main">
+          <div class="row">
+              <div class="col-md-12" >
+                {% if user.is_authenticated %}
+                      <h1 class="title">{% block block_title %}{{request.title}} {% endblock %}</h1>
+                     {% block block_breadcrumb %}
+                        <ol class="breadcrumb"><li id="breadcrumb"><a href="/">Home</a></li>
+                            {% if request.breadcrumb %}
+                                 {% for breadcrumb in request.breadcrumb.items  %}
+                                        {% if breadcrumb.1 != '' %}
+                                               <li> <a href={{breadcrumb.1}} >{{breadcrumb.0}}</a> </li>
+                                        {% else %}
+                                              <li>  {{breadcrumb.0}} </li>
+                                        {% endif %}
+                                 {% endfor %}
+                            {% endif %}
+                        </ol>
+                     {% endblock %}
+                {% endif %}
+              </div>
+          </div>
+
+
+          {% if messages %}
+                <div class="row">
+                    <div class="col-lg-12">
+                        {% for msg in messages %}
+                            <div class="alert alert-{{msg.level_tag}}" role="alert">
+                                 <a href="#" class="close" data-dismiss="alert">&times;</a>
+                                    {{msg.message|safe}}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+          {% endif %}
+
+          {% block content %}{% endblock %}
+         </div>
+       </main>
+
+      <footer>
+            <div id="footer"> © 2016-2017 Quick Heal Technologies </div>
+      </footer>
+
+      <a href="#" class="scrollToTop"><span class="glyphicon glyphicon-chevron-up"></span></a></span></a>
+  </body>
+
+</html>
+
+<script type="text/javascript">
+    jQuery(document).ready(function(){
+
+     jQuery(function () {jQuery('[data-toggle="tooltip"]').tooltip()})
+       jQuery('.alert').delay(2000).fadeOut(1000);
+
+        jQuery(window).scroll(function(){
+            if (jQuery(this).scrollTop() > 100) {
+                jQuery('.scrollToTop').fadeIn();
+            } else {
+                jQuery('.scrollToTop').fadeOut();
+            }
+        });
+        jQuery('.scrollToTop').click(function(){
+            jQuery('html, body').animate({scrollTop : 0},800);
+            return false;
+        });
+       activemMenu();
+       function activemMenu(){
+            {% if request.activeMenu %}
+                {% for menuItem in  request.activeMenu %}
+
+                    id = '{{menuItem}}'.trim()
+
+                    if ( jQuery("#"+id ).length)
+                    {
+                    jQuery("#"+id ).addClass('active');}
+
+                {% endfor %}
+            {% endif %}
+       }
+    });
+ </script>

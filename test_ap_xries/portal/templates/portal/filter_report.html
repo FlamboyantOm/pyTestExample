@@ -1,0 +1,623 @@
+{% extends "portal/base.html" %}
+
+{% block content %}
+{% load staticfiles %}
+
+<script src="{% static 'portal/js/jquery.validate.min.js' %}"></script>
+<link href="{% static 'portal/css/dataTables.min.css' %}" rel="stylesheet">
+<link href="{% static 'portal/css/daterangepicker.min.css' %}" rel="stylesheet">
+
+<script src="{% static 'portal/js/dataTables.min.js' %}"></script>
+<script src="{% static 'portal/js/bootstrap-checkbox.min.js' %}"></script>
+<script src="{% static 'portal/js/moment.min.js' %}"></script>
+<script src="{% static 'portal/js/jquery.daterangepicker.min.js' %}"></script>
+<script src="{% static 'portal/js/custome-function.js' %}"></script>
+
+<div class="row col-lg-12">
+         <div class="row col-lg-4 clusterType">
+                <label > Cluster Type <strong class="required-field">*</strong> </label>
+                <select class="selectpicker" id="clusterType" name="clusterType" onchange="getFilterOption();">
+                             <option value=''>--Select--</option>
+                             {% for key,val in data.clusterType.items %}
+                                    <option value="{{key}}" >{{val}}</option>
+                             {% endfor %}
+                </select>
+          </div>
+
+         <div class="row col-lg-4">
+              <span class="error" hidden="hidden"><b>Please select cluster type</b></span>
+         </div>
+
+</div>
+
+<div id="filterData">
+    <form method="post"  name="reportForm" id="reportForm">
+    {% csrf_token %}
+        <input type="hidden" value="" name="clusterType" id="clusterTypeSelect">
+        <div class="row col-lg-12 customFilter" hidden>
+          <div class="row col-lg-6" id="clusterCustomFilter">
+                 <fieldset><legend >Cluster Filter</legend>
+                 <div class="createdUserDiv selectpickerDiv">
+                     <label class=" col-lg-2">Created</label>
+                     <select class="selectpicker" title="Created User Not Selected"  data-live-search="true" id="createdUser" name="createdUser" data-size="5" data-actions-box="true" multiple ></select>
+                 </div>
+
+                 <div class="assignUserDiv selectpickerDiv">
+                    <label class=" col-lg-2">Assign</label>
+                    <select class="selectpicker" title="Assign User Not Selected"  data-live-search="true" id="assignUser" name="assignUser" data-size="5" data-actions-box="true" multiple></select>
+                 </div>
+
+                 <div class="selectpickerDiv">
+                    <label class=" col-lg-2">Source </label>
+                    <select class="selectpicker" title="Source Not Selected"  data-live-search="true" id="source" name="source" data-size="5" data-actions-box="true" multiple></select>
+                 </div>
+
+                 <div class="selectpickerDiv">
+                    <label class=" col-lg-2">Progress </label>
+                    <select class="selectpicker" title="Progress Not Selected"  data-live-search="true" id="progress" name="progress" data-size="5" data-actions-box="true" multiple></select>
+                 </div>
+
+                 <div class="selectpickerDiv">
+                    <label class=" col-lg-2">Priority </label>
+                    <select class="selectpicker" title="Priority Not Selected"  data-live-search="true" id="priority" name="priority" data-size="5" data-actions-box="true" multiple></select>
+                 </div>
+
+                 <label class=" col-lg-2" for="state_dateRange">Date</label>
+                 <input id="state_dateRange"  name="state_dateRange" size="30" value="" class="clusterFilterDate"  >
+                 <input type="checkbox" data-switch-always id="dateCheckbox" name="dateCheckbox" data-group-cls="btn-group-xs">
+              </fieldset>
+            </div>
+
+            <div class="col-lg-6" id="signatureCustomFilter">
+                <fieldset><legend >Signature Filter</legend>
+
+                 <div class="sigAddedUserDiv selectpickerDiv">
+                     <label class=" col-lg-2">Added</label>
+                     <select class="selectpicker" title="Added User Not Selected"  data-live-search="true" id="sigAddedUser" name="sigAddedUser" data-size="5" data-actions-box="true" multiple ></select>
+                 </div>
+
+                <div class="stateListDiv selectpickerDiv">
+                    <label class=" col-lg-2">State </label>
+                    <select class="selectpicker" title="State Not Selected"  data-live-search="true" id="state" name="state" data-size="5" data-actions-box="true" multiple></select>
+                 </div>
+
+                    <div class="tagListDiv selectpickerDiv" >
+                    <label class=" col-lg-2">Tags </label>
+                     <select class="selectpicker" title="Tag Not Selected" data-live-search="true"  data-size="5" id="tags" name="tags" data-actions-box="true" multiple>
+                    </select>
+                </div>
+
+                 <div class="selectpickerDiv">
+                    <label class=" col-lg-2">Status </label>
+                     <select class="selectpicker" title="Status Not Selected" data-live-search="true"   id="status" name="status" data-actions-box="true" multiple>
+                    </select>
+                </div>
+
+                <label class=" col-lg-2" for="state_sigDateRange">Date</label>
+                <input id="state_sigDateRange" name="state_sigDateRange" size="30" value="" class="clusterFilterDate">
+                 <input type="checkbox" data-switch-always id="sigDateCheckbox" name="sigDateCheckbox" data-group-cls="btn-group-xs">
+                </fieldset>
+          </div>
+        </div>
+    </form>
+</div>
+
+<div class="row col-lg-12" id="noRecords"></div>
+<div id="submitResetButton">
+    <input type="submit" onclick="getTableData();" class="btn btn-primary" id="fetch_report" value="Filter " hidden="hidden"/>
+    <input type="submit" onclick="resetFilter();" class="btn btn-primary" id="reset_filter" value="Reset" hidden="hidden"/>
+</div>
+<div class="row col-lg-12 filterResult" hidden>
+    <br>
+    <table id="build-list"  class="display shadow-in dataTable" cellspacing="0" width="100%" data-role="table">
+      <thead>
+        <tr>
+          <th>RecordID</th>
+          <th>TRR_ID</th>
+          <th>ThreatName</th>
+           <th>AddedBy</th>
+          <th>PatternCount</th>
+          <th>State</th>
+          <th>Cluster</th>
+           <th>View</th>
+           <th>Export(.ini)</th>
+            <th><input name="select_all" value="1" id="example-select-all" type="checkbox" /></th>
+
+        </tr>
+      </thead>
+      <tfoot>
+        <tr>
+          <th>RecordID</th>
+          <th>TRR_ID</th>
+          <th>ThreatName</th>
+          <th>AddedBy</th>
+          <th>PatternCount</th>
+          <th>State</th>
+          <th>Cluster</th>
+          <th>View</th>
+          <th>Export(.ini)</th>
+          <th></th>
+        </tr>
+      </tfoot>
+    </table>
+
+    <div class="col-lg-6 row">
+        <div id="ExportIni" class="row col-lg-4"></div>
+        <div id="ExportInx" class="row col-lg-3"><a role="button"><span class="glyphicon glyphicon-export"></span>&nbsp; Export(.inx)</a></div>
+        <div class="col-lg-4"><a role="button" onclick="getFilterOption();"><span class="glyphicon glyphicon-refresh"></span>&nbsp;Reset filter</a></div>
+    </div>
+
+ </div>
+
+
+<script type="text/javascript">
+
+function getFilterOption()
+{
+ jQuery('.filterResult').hide();
+
+ if(jQuery("#clusterType option:selected" ).val())
+    {
+               $.ajax({
+                        url: "/filter_inx/list/ajax/" ,
+                        dataType: "json",
+
+                        type: "POST",
+                        "data" : { Type : jQuery("#clusterType option:selected" ).val(),
+                                   csrfmiddlewaretoken: '{{ csrf_token }}',
+                                 },
+                        success: function( data ) {
+
+                                 if(data.totalRecord)
+                                    {
+                                         jQuery('.customFilter').show();
+                                         jQuery('#submitResetButton').show();
+
+                                         getFilterList(data);
+                                         jQuery('#noRecords').html('');
+                                         getSignaturefilterList(data);
+                                         getUserList(data,'createdUser');
+                                         getUserList(data,'assignUser');
+                                         getUserList(data,'sigAddedUser');
+                                     }
+                                  else
+                                  {
+                                  jQuery('.customFilter').hide();
+                                  jQuery('#submitResetButton').hide();
+                                  jQuery('#noRecords').html('<br><strong class="alert-warning" ><p>No data available for selected cluster type, reselect cluster type</p></strong>');
+                                 }
+                              }
+                    });
+
+                jQuery('.customFilter').removeAttr('hidden');
+                jQuery('.error').attr('hidden','hidden');
+                jQuery('#clusterTypeSelect').val(jQuery('#clusterType').val());
+    }
+    else
+    {  jQuery('.customFilter').hide();
+        jQuery('#submitResetButton').hide();
+        jQuery('.error').removeAttr('hidden','hidden');
+    }
+}
+
+function resetFilter()
+{
+  jQuery('.customFilter .selectpicker ').selectpicker('val', '');
+  jQuery('#signatureCustomFilter #sigDateCheckbox').prop('checked',false);
+  jQuery('#clusterCustomFilter #dateCheckbox').prop('checked',false);
+  getFilterOption();
+}
+
+function getTableData()
+{
+
+    jQuery('.clusterFilter').hide();
+    if(jQuery("#clusterType option:selected" ).val() != "" )
+    {
+         jQuery('.error').attr('hidden','hidden');
+         if(jQuery('#dateCheckbox').is(':checked'))
+         {
+                if(jQuery('#state_dateRange').val() == '')
+                {
+                    jQuery('.error').removeAttr('hidden');
+                    jQuery('.error').css('display','block');
+                    jQuery('.error').html('');
+                    jQuery('.error').append('<b>Required date in cluster filter</b>');
+
+                    jQuery('.error').delay(2000).fadeOut(2000,function() {
+                          jQuery('.error').attr('hidden','hidden');
+                        });
+
+                    return 0;
+                }
+         }
+         if(jQuery('#sigDateCheckbox').is(':checked'))
+         {
+             if(jQuery('#state_sigDateRange').val() == '')
+             {
+                  jQuery('.error').removeAttr('hidden');
+                  jQuery('.error').css('display','block');
+                  jQuery('.error').html('');
+                  jQuery('.error').append('<b>Required date in signature filter</b>');
+
+                  jQuery('.error').delay(2000).fadeOut(2000,function() {
+                        jQuery('.error').attr('hidden','hidden');
+                    });
+                  return 0;
+             }
+         }
+         jQuery('.error').attr('hidden','hidden');
+         getFilterResult();
+    }
+    else
+   { jQuery('.error').removeAttr('hidden'); }
+}
+
+function getFilterResult()
+{
+    jQuery('#build-list').DataTable().destroy();
+    var createdUser,assignUser,state,source,progress,priority,tags,status,sigAddedUser = ''
+
+    if(jQuery('#createdUser').val())
+    { createdUser = jQuery('#createdUser').val().toString();   }
+    if(jQuery('#assignUser').val())
+    { assignUser = jQuery('#assignUser').val().toString();   }
+    if(jQuery('#state').val())
+    { state = jQuery('#state').val().toString();   }
+    if(jQuery('#source').val())
+    { source = jQuery('#source').val().toString();   }
+    if(jQuery('#progress').val())
+    { progress = jQuery('#progress').val().toString();   }
+    if(jQuery('#priority').val())
+    { priority = jQuery('#priority').val().toString()  ; }
+    if(jQuery('#tags').val())
+    { tags = jQuery('#tags').val().toString()   }
+    if(jQuery('#status').val())
+    { status = jQuery('#status').val().toString();   }
+
+    if(jQuery('#sigAddedUser').val())
+    { sigAddedUser = jQuery('#sigAddedUser').val().toString();   }
+
+
+    table = jQuery('#build-list').DataTable( {
+        "processing": true,
+        "serverSide": true,
+		"order": [[ 0, "desc" ],[1,""],[2,""],[3,""],[4,""],[5,""],[6,""],[7,""],[8,""],[9,""]],
+        "ajax": {"url": "/filter_result/ajax/",
+				"dataType": "json",
+				"type":"POST",
+				"data" : {
+										createdUser  : createdUser,
+										assignUser   : assignUser,
+										state        : state,
+										source       : source,
+										progress     : progress,
+										priority     : priority,
+										status       : status,
+										tags         : tags,
+										sigAddedUser : sigAddedUser,
+										Type         : jQuery('#clusterType').val(),
+										clusterDate  : jQuery('#state_dateRange').val(),
+										signatureDate: jQuery('#state_sigDateRange').val(),
+										csrfmiddlewaretoken: '{{ csrf_token }}',
+								},
+		},
+
+		"language": {"processing": "<div class='processing'> Processing ...</div>"},
+		"columns": [{ "data": "RecordId" },{"data" : "MalwareIndex" },{ "data": "MalwareName" },{"data":"AddedBy"},{ "data": "SigCount" },{"data" : "State"},{ "data": "ClusterName" },{ "data": "view" },{"data":"export"}],
+          "autoWidth": false,
+          "columnDefs": [
+
+                      { "width": "6%", "targets":[0,1,4,7,8]},
+                      { "width": "10%", "targets": [3,5,6]},
+                      { "width": "20%", "targets": 2},
+                      { "targets": [7,8],"sClass": "text-center","bSortable": false },
+                       ],
+
+          "fnDrawCallback": function (resp) {
+                                        if(resp._iRecordsTotal == 0)
+                                        {
+                                            emptyFilterRecord();
+                                        }
+                                        else
+                                        {
+                                            jQuery('.filterResult').show();
+                                            jQuery('.customFilter').hide();
+                                            jQuery('#submitResetButton').hide();
+
+                                            filterData = resp.json.filterData;
+                                            filterData = JSON.stringify(filterData);
+                                            jQuery('#ExportIni').html('<a href="/downloadFilterIniFile/?filterData='+encodeURIComponent(filterData)+'" id="inipath" target="_blank"  data-toggle="tooltip" data-placement="bottom" title="Export All ini"><span class="glyphicon glyphicon-export"></span>&nbsp;Export All(.ini) </a>')
+                                            jQuery('#ExportInx').html('<a href="/downloadFilterIniFile/?filterData='+encodeURIComponent(filterData)+'&inx=1" id="inxpath" target="_blank"  data-toggle="tooltip" data-placement="bottom" title="Export inx" ><span class="glyphicon glyphicon-export"></span>&nbsp;Export(.inx) </a>')
+                                            <!--jQuery('#ExportIniWithSearch').html('<a onClick = "getSearchValue();" href="/downloadFilterIniFile/?searchData='+encodeURIComponent(JSON.stringify(getSearchValue()))+'&filterData='+encodeURIComponent(filterData)+'" target="_blank"  data-toggle="tooltip" data-placement="bottom" title="Export ini"><span class="glyphicon glyphicon-export"></span>&nbsp;Export2(.ini) </a>')-->
+                                        }
+                        },
+
+    } );
+
+
+    jQuery('#build-list_filter').html('');
+     arr = [0, 1, 2, 3,4, 5,6];
+     cnt = 0;
+
+    jQuery('#build-list tfoot th').each( function () {
+    if (jQuery.inArray(cnt, arr) != -1)
+        {
+       var title =  jQuery('#build-list thead th:eq('+cnt+')').text();
+        jQuery(this).html('<input id="search_'+title+'"  class="searchValue" type="text" placeholder="'+title+'" />');
+        cnt++;
+        }
+    } );
+
+
+    table.columns().every( function () {
+        var that = this;
+        jQuery( 'input', this.footer() ).on( 'keyup change', function () {
+            if ( that.search() !== this.value ) {
+                that
+                    .search( this.value )
+                    .draw();
+            }
+        } );
+    } );
+
+}
+
+
+jQuery('#clusterCustomFilter select').on('change',function()
+{
+if(jQuery('#clusterType').val() )
+{
+ jQuery('#signatureCustomFilter .selectpicker ').selectpicker('val', '');
+ jQuery('#signatureCustomFilter #sigDateCheckbox').prop('checked',false);
+  signatureFilterAjax();
+ }
+});
+
+
+
+function signatureFilterAjax()
+{
+    var createdUser,assignUser,source,progress,priority = ''
+    if(jQuery('#createdUser').val())
+    { createdUser = jQuery('#createdUser').val().toString()   }
+    if(jQuery('#assignUser').val())
+    { assignUser = jQuery('#assignUser').val().toString()   }
+
+    if(jQuery('#source').val())
+    { source = jQuery('#source').val().toString()   }
+    if(jQuery('#progress').val())
+    { progress = jQuery('#progress').val().toString()   }
+    if(jQuery('#priority').val())
+    { priority = jQuery('#priority').val().toString()   }
+    $.ajax({
+                        url: "/filter_inx/signature/list/ajax/" ,
+                        dataType: "json",
+                        type:"POST",
+                        data : {
+                                createdUser : createdUser,
+                                assignUser  : assignUser,
+
+                                source      : source,
+                                progress    : progress,
+                                priority    : priority,
+                                Type        : jQuery('#clusterType').val(),
+								clusterDate  : jQuery('#state_dateRange').val(),
+                               csrfmiddlewaretoken: '{{ csrf_token }}',
+                        },
+                        success: function(data) {
+
+                        if(data.sigAddedUser.length == 0){emptyFilterRecord(); }
+                                         getUserList(data,'sigAddedUser');
+                                         getSignaturefilterList(data);
+                              }
+                    });
+}
+
+function getFilterList(data)
+{
+    jQuery('#dateCheckbox').prop('checked',false);
+    jQuery('#sigDateCheckbox').prop('checked',false);
+    jQuery('#state').html('');
+    jQuery('#progress').html('');
+    jQuery('#source').html('');
+    jQuery('#priority').html('');
+
+    for(var i=0; i< data.state.length ; i++ )
+    {
+        jQuery('#state').append('<option value="'+data.state[i][0]+'">'+data.state[i][1]+'</option>');
+    }
+    jQuery('#state').selectpicker('refresh');
+
+    for(var i=0; i< data.progress.length ; i++ )
+    {
+        jQuery('#progress').append('<option value="'+data.progress[i][0]+'">'+data.progress[i][1]+'</option>');
+    }
+    jQuery('#progress').selectpicker('refresh');
+
+    for(var i=0; i< data.source.length ; i++ )
+    {
+        jQuery('#source').append('<option value="'+data.source[i][0]+'">'+data.source[i][1]+'</option>');
+    }
+    jQuery('#source').selectpicker('refresh');
+
+
+     for(var i=0; i< data.priority.length ; i++ )
+    {
+        jQuery('#priority').append('<option value="'+data.priority[i][1]+'">'+data.priority[i][0]+'</option>');
+    }
+    jQuery('#priority').selectpicker('refresh');
+}
+
+function getUserList(data,id)
+{
+
+    jQuery('#'+id).html('');
+   if(id == 'createdUser')
+   {
+     data = data.createdUser;
+   }
+     if(id == 'assignUser')
+   {
+     data = data.assignUser;
+   }
+
+    if(id == 'sigAddedUser')
+   {
+     data = data.sigAddedUser;
+   }
+
+   for(var i=0; i< data.length ; i++ )
+    {
+        jQuery('#'+id).append('<option value="'+data[i]+'">'+data[i]+'</option>');
+    }
+    jQuery('#'+id).selectpicker('refresh');
+}
+
+function getSignaturefilterList(data)
+{
+
+    jQuery('#state').html('');
+    for(var i=0; i< data.state.length ; i++ )
+            { jQuery('#state').append('<option value="'+data.state[i][0]+'">'+data.state[i][1]+'</option>'); }
+    jQuery('#state').selectpicker('refresh');
+
+    jQuery('#status').html('');
+    for(var i=0; i< data.status.length ; i++ )
+        { jQuery('#status').append('<option value="'+data.status[i][0]+'">'+data.status[i][1]+'</option>'); }
+    jQuery('#status').selectpicker('refresh');
+
+    jQuery('#tags').html('');
+    if(!(data.tags.length))
+    {  jQuery('.tagListDiv').hide();  }
+       else  {   jQuery('.tagListDiv').show();   }
+
+    for(var i=0; i< data.tags.length ; i++ )
+    { jQuery('#tags').append('<option value="'+data.tags[i][0]+'">'+data.tags[i][1]+'</option>'); }
+    jQuery('#tags').selectpicker('refresh');
+}
+
+ jQuery('#dateCheckbox').on('change',function()
+ {
+    if( !(jQuery('#dateCheckbox').is(':checked')))
+    {
+
+        jQuery('#state_dateRange').val('');
+        jQuery('#state_dateRange').prop('disabled',true);
+        jQuery('.error').html('');
+    }
+    else
+    {
+        jQuery('#state_dateRange').prop('disabled',false);
+    }
+
+ });
+  jQuery('#sigDateCheckbox').on('change',function()
+ {
+    if( !(jQuery('#sigDateCheckbox').is(':checked')))
+    {
+        jQuery('#state_sigDateRange').val('');
+        jQuery('#state_sigDateRange').prop('disabled',true);
+        jQuery('.error').html('');
+    }
+    else
+    {
+        jQuery('#state_sigDateRange').prop('disabled',false);
+    }
+ });
+
+
+$('#state_dateRange').bind('datepicker-closed',function()
+{
+ if(jQuery('#clusterType').val() && jQuery('#state_dateRange').val())
+        {
+
+        signatureFilterAjax();
+        }
+});
+
+jQuery(document).ready(function()
+ {
+
+
+ $('#example-select-all').on('click', function(){
+      // Check/uncheck all checkboxes in the table
+      var rows = table.rows({ 'search': 'applied' }).nodes();
+      $('input[type="checkbox"]', rows).prop('checked', this.checked);
+   });
+    $('#build-list tbody').on('change', 'input[type="checkbox"]', function(){
+
+      if(!this.checked){
+         var el = $('#example-select-all').get(0);
+
+         if(el && el.checked && ('indeterminate' in el)){
+
+            el.indeterminate = true;
+         }
+      }
+   });
+
+
+ //////////////////////////////////////////////
+ jQuery('.customFilter').hide();
+        if("{{data.noTypePerm}}")
+        {
+            jQuery('.emptyRecord').show();
+            jQuery('#filterData').hide();
+            jQuery('.clusterType').hide();
+            jQuery('#submitResetButton').hide();
+
+        }
+        else
+        {
+        jQuery('.clusterFilter').hide();
+        jQuery('#submitResetButton').hide();
+
+
+         jQuery('#clusterType').val('161');
+         jQuery('#clusterType').selectpicker('refresh');
+         getFilterOption();
+
+        jQuery('.clusterCheckbox').prop('checked',false);
+        jQuery('.sigDateCheckbox').prop('checked',false);
+        jQuery('#dateCheckbox').checkboxpicker({
+         html: true,
+        offLabel: '<span class="glyphicon glyphicon-remove">',
+        onLabel: '<span class="glyphicon glyphicon-ok">'
+        });
+
+        jQuery('#sigDateCheckbox').checkboxpicker({
+         html: true,
+        offLabel: '<span class="glyphicon glyphicon-remove">',
+        onLabel: '<span class="glyphicon glyphicon-ok">'
+        });
+
+        if( !(jQuery('#dateCheckbox').is(':checked')))
+        {
+        jQuery('#state_dateRange').val('');
+        jQuery('#state_dateRange').prop('disabled',true);
+        }
+        if( !(jQuery('#sigDateCheckbox').is(':checked')))
+        {
+         jQuery('#state_sigDateRange').val('');
+         jQuery('#state_sigDateRange').prop('disabled',true);
+         }
+
+         }
+ });
+
+ function emptyFilterRecord()
+ {
+  jQuery('.customFilter').hide();
+  jQuery('#submitResetButton').hide();
+  <!--jQuery('#noRecords').html('<br><strong class="alert-warning" ><p>No records for selected filters <a role="button" onclick="getFilterOption();"><span class="glyphicon glyphicon-refresh"></span>&nbsp;Reset filter</a></p></strong>');-->
+  jQuery('#noRecords').html('<br><strong class="alert-warning" ><p>No records for selected filters</p></strong>');
+  jQuery('#noRecords').append('<br><input type="submit" onclick="getFilterOption();" class="btn btn-primary" value="Reset Filters" title="Reset filters" hidden="hidden"/>');
+ }
+
+</script>
+
+<div class=" col-lg-12 emptyRecord " hidden>
+    <span class="alert-info" ><h3><strong >No data available</strong></h3></span>
+</div>
+{% endblock %}

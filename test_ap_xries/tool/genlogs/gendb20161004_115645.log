@@ -1,0 +1,31 @@
+Tuesday, October 04, 2016, 11:56:45.
+
+
+Scanning: D:\web\apex\data\ini\20161004_111144_12_20161004_115644_uut1wr5nt11rju1ua557o1ot2s3yrfws\1.ini
+
+[12_20161004_115644_uut1wr5nt11rju1ua557o1ot2s3yrfws]
+Skipped: Duplicate : 3348
+
+--------------------------------------------------------------------------
+
+Scan Complete
+
+Success: Sql Db file created/updated successfully
+
+--------------------------------------------------------------------------
+
+Scan Summary
+
+Total Files Scanned     = 1
+Total Records Found     = 1
+Total Records Added     = 0
+Total Duplicate Records = 1
+Total Records Updated   = 0
+Total Records Skipped   = 0
+
+Start Time    : 11:56:45 
+End Time      : 11:56:45 
+Total Time    : 00:00:00
+
+
+--------------------------------------------------------------------------

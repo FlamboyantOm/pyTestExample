@@ -1,0 +1,31 @@
+Tuesday, September 20, 2016, 13:53:09.
+
+
+Scanning: D:\web\apex\data\ini\20160920_130109_305_20160920_135309_whg33nky8hbye73bhcbd772dojf7ewd8\1.ini
+
+[305_20160920_135309_whg33nky8hbye73bhcbd772dojf7ewd8]
+Skipped: Filter4.Oprt: Invalid filter opertion
+
+--------------------------------------------------------------------------
+
+Scan Complete
+
+Success: Sql Db file created/updated successfully
+
+--------------------------------------------------------------------------
+
+Scan Summary
+
+Total Files Scanned     = 1
+Total Records Found     = 1
+Total Records Added     = 0
+Total Duplicate Records = 0
+Total Records Updated   = 0
+Total Records Skipped   = 1
+
+Start Time    : 13:53:10 
+End Time      : 13:53:10 
+Total Time    : 00:00:00
+
+
+--------------------------------------------------------------------------

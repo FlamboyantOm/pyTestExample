@@ -1,0 +1,31 @@
+Tuesday, October 04, 2016, 15:49:24.
+
+
+Scanning: D:\web\apex\data\ini\20161004_150324_12_20161004_154924_pczyt157gdmbriiv0b82rynexiklp9c5\1.ini
+
+[12_20161004_154924_pczyt157gdmbriiv0b82rynexiklp9c5]
+Added : 3436
+
+--------------------------------------------------------------------------
+
+Scan Complete
+
+Success: Sql Db file created/updated successfully
+
+--------------------------------------------------------------------------
+
+Scan Summary
+
+Total Files Scanned     = 1
+Total Records Found     = 1
+Total Records Added     = 0
+Total Duplicate Records = 0
+Total Records Updated   = 1
+Total Records Skipped   = 0
+
+Start Time    : 15:49:24 
+End Time      : 15:49:25 
+Total Time    : 00:00:01
+
+
+--------------------------------------------------------------------------

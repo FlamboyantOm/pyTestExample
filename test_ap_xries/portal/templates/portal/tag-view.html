@@ -1,0 +1,113 @@
+{% extends "portal/base.html" %}
+
+{% block content %}
+{% load staticfiles %}
+<link href="{% static 'portal/css/dataTables.min.css' %}" rel="stylesheet">
+<script src="{% static 'portal/js/dataTables.min.js' %}"></script> 
+
+<div class="row">
+  <div class="col-lg-10">
+ <table class="table" >
+
+     <tr>
+        <th  class="col-lg-2">Tag Name</th>
+        <td>{{data.name}} </td>
+      </tr>
+   <tr>
+        <th  class="col-lg-2">Date Added</th>
+        <td>{{data.addedon}} </td>
+      </tr>
+  </table>
+
+
+  </div>
+
+  <div class="col-lg-2">
+<table class="table tagTypeCount" >
+
+<tr><th>Type</th><th>Count</th></tr>
+   {% for type in data.TypeCount %}
+        <tr>
+        <td  class="col-lg-2">{{type.0}}</td>
+        <td>{{type.1}} </td>
+      </tr>
+   {% endfor %}
+  </table>
+
+  </div>
+
+    <div class="col-lg-12">
+    <table id="build-list"  class="display shadow-in dataTable" cellspacing="0" width="100%">
+      <thead>
+        <tr>
+          <th>RecordID</th>
+          <th>TRR_ID</th>
+          <th>Threat Name</th>
+          <th>Pattern Count</th>
+          <th>Type</th>
+          <th>Cluster</th>
+             <th>State</th>
+
+             <th>View</th>
+
+        </tr>
+      </thead>
+      <tfoot>
+        <tr>
+          <th>RecordID</th>
+          <th>TRR_ID</th>
+          <th>Threat Name</th>
+          <th>Pattern Count</th>
+          <th>Type</th>
+          <th>Cluster</th>
+            <th>State</th>
+
+           <th>View</th>
+        </tr>
+      </tfoot>
+    </table>
+
+<script type="text/javascript">
+
+jQuery(document).ready(function() {
+ jQuery('[data-toggle="tooltip"]').tooltip();
+    table = jQuery('#build-list').DataTable( {
+        "processing": true,
+        "serverSide": true,
+		"order": [[ 0, "desc" ],[1,""],[2,""],[3,""],[4,""],[5,""],[6,""],[7,""]],
+        "ajax": {"url": "/signature/list/ajax/?tid={{data.id}}",},
+		"language": {"processing": "<div class='processing'> Processing ...</div>"},
+		"columns": [{ "data": "RecordId" },{"data" : "MalwareIndex" },{ "data": "MalwareName" },{ "data": "SigCount" },{"data" : "Type"},{ "data": "ClusterName" },{"data":"State"},{ "data": "view" }],
+          "autoWidth": false,
+          "columnDefs": [
+                      { "width": "5%", "targets": 0 },
+                      { "width": "5%", "targets": 7,"sClass": "text-right","bSortable": false },
+                      ],
+    } );
+    jQuery('#build-list_filter').html('');
+    jQuery('#build-list tfoot th').each( function () {
+        var title = jQuery(this).text();
+        if (title != 'View')
+        {
+        len = jQuery(this).text().length;
+        jQuery(this).html( '<input id="search_'+title+'" type="text" placeholder="'+title+'" />' );
+        }
+    } );
+    // DataTable
+
+    table.columns().every( function () {
+        var that = this;
+        jQuery( 'input', this.footer() ).on( 'keyup change', function () {
+            if ( that.search() !== this.value ) {
+                that
+                    .search( this.value )
+                    .draw();
+            }
+        } );
+    } );
+} );
+
+</script>
+  </div>
+</div>
+{% endblock %} 

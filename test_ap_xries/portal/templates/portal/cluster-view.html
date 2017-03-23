@@ -1,0 +1,474 @@
+{% extends "portal/base.html" %}
+
+{% block content %}
+{% load staticfiles %}
+
+<link href="{% static 'portal/css/dataTables.min.css' %}" rel="stylesheet">
+<link href="{% static 'portal/css/circle.css' %}" rel="stylesheet">
+
+<script src="{% static 'portal/js/dataTables.min.js' %}"></script>
+
+
+<div class="row view-cluster">
+  <div class="col-lg-9">
+    <table class="table" >
+      {% if data.ClusterData.1 %}
+          <tr>
+            <th class="col-lg-2" >Cluster</th>
+            <td colspan="5"  ><span class="glyphicon glyphicon-folder-close"></span>&nbsp;{{data.ClusterData.1}}</td>
+          </tr>
+      {% endif %}
+
+      {% if data.ClusterData.3 %}
+          <tr>
+            <th class="col-lg-2">Created On</th>
+            <td><span class="glyphicon glyphicon-calendar"></span>&nbsp;{{data.ClusterData.5}}</td>
+          </tr>
+      {% endif %}
+
+      {% if data.ClusterData.3 %}
+          <tr>
+            <th class="col-lg-2">Created By</th>
+            <td><a href="/user/{{data.ClusterData.3}}"><span class="glyphicon glyphicon-user"></span>&nbsp;{{data.ClusterData.3}}</a></td>
+          </tr>
+      {% endif %}
+
+      {% if data.clusterOpt %}
+          {% for opt in data.clusterOpt.items %}
+            <tr>
+                <th class="col-lg-2"> {{opt.0}}</th>
+                <td>{% for usr in opt.1 %}  <a href="/user/{{usr}}"><span class="glyphicon glyphicon-user"></span>&nbsp;{{usr}}</a>  {% endfor %}</td>
+            </tr>
+          {% endfor %}
+      {% endif %}
+
+      <tr>
+        {% if data.ClusterData.2 %}
+        <th >Notes</th>
+        <td colspan="5" ><span class="glyphicon glyphicon-pencil"></span>&nbsp;{{data.ClusterData.2}}</td>
+        {% endif %}
+      </tr>
+
+       <tr>
+        <th >Type</th>
+        <td >{{data.ClusterData.9}}</td>
+      </tr>
+
+         {% if data.clusterFiles %}
+        <tr >
+            <th >ClusterFiles &nbsp;<span class="glyphicon glyphicon-file"></span></th>
+               <td  colspan="5" >
+                   <ol class="list-inline">
+                        {% if data.clusterFiles %}
+                           {% for clusterFiles in data.clusterFiles%}
+                               <li class="label label-success ">
+                                <a href="/downloadClusterFile/?file={{clusterFiles.0}}" target="_blank" data-toggle="tooltip" data-placement="bottom" title="Download" >
+                                 {{clusterFiles.1}} &nbsp;<span class="glyphicon glyphicon-download-alt"></span></a>
+                               </li>
+                           {% endfor %}
+                       {% endif %}
+                   </ol>
+              </td>
+        </tr>
+          {% endif %}
+    </table>
+  </div>
+
+  <div class="col-lg-3">
+      <table class="table" id="view_cluster_details">
+      {% if data.ClusterData.4 %}
+          <tr>
+            <th >Assigned To</th>
+            <td colspan="5"><a  href="/user/{{data.ClusterData.4}}"><span class="glyphicon glyphicon-user"></span>&nbsp;{{data.ClusterData.4}}</a> </td>
+          </tr>
+      {% endif %}
+
+      {% if data.ClusterData.7 %}
+          <tr>
+            <th >Source</th>
+            <td colspan="5" > {{data.ClusterData.7}}</td>
+          </tr>
+      {% endif %}
+
+      {% if data.ClusterData.8 %}
+          <tr>
+            <th >Priority</th>
+            <td colspan="5" > P{{data.ClusterData.8}}</td>
+          </tr>
+      {% endif %}
+
+   {% if data.ClusterData.10 != ''  %}
+       <tr>
+        <th >Progress</th>
+        <td ><div class="c100 p{{data.ClusterData.10}} small" >
+                    <span>{{data.ClusterData.10}}%</span>
+                    <div class="slice">
+                        <div class="bar"></div>
+                        <div class="fill"></div>
+                    </div>
+               </div>
+        </td>
+      </tr> {% endif %}
+
+    </table>
+  </div>
+</div>
+
+<div class="row view-cluster">
+	<div class="col-lg-12">
+        {% if data.editPerm == 0 %}
+        <a href="/cluster/{{data.ClusterId}}" class="btn btn-primary btn-outline"><span class="	glyphicon glyphicon-edit" ></span> Edit Cluster</a>
+
+        <a class="btn btn-danger btn-outline btn-round-sm" onclick="confirmDelete();"><span class="glyphicon glyphicon-remove" ></span> Delete Cluster</a>
+{% endif %}
+         {% if data.typePerm == 0 %}
+        <a class="btn btn-success btn-outline btn-round-sm" href="/signature/?action=add&cid={{data.ClusterId}}"><span class="glyphicon glyphicon-plus" ></span>Add Signature</a>
+		{% endif %}
+
+
+        <script src="{% static 'portal/js/SimpleAjaxUploader.js' %}"></script>
+         {% if data.typePerm == 0 %}
+        <button data-target="#iniModal" title="Add Pattern" data-toggle="modal" type="button" id="upload-btn" class="btn btn-primary btn-outline btn-round-sm" data-placement="bottom"><span class="glyphicon glyphicon-plus"></span>  Upload .ini Files  </button>
+        {% endif %}
+
+        <a href="/downloadFilterIniFile/?clusterExport=1&clusterId={{data.ClusterId}}&type={{data.clusterType}}" id="inipath" target="_blank"  data-toggle="tooltip" data-placement="bottom" title="Export ini" class="btn btn-primary btn-outline btn-round-sm exportSig"><span class="glyphicon glyphicon-export"></span>&nbsp;Export (.ini) </a>
+
+        <a href="/downloadFilterIniFile/?clusterExport=1&clusterId={{data.ClusterId}}&type={{data.clusterType}}&inx=1" id="inxpath" target="_blank"  data-toggle="tooltip" data-placement="bottom" title="Export inx" class="btn btn-primary btn-outline btn-round-sm exportSig"><span class="glyphicon glyphicon-export"></span>&nbsp;Export (.inx) </a>
+
+        <div id="errormsg" class="clearfix redtext" ></div>
+		<input type="hidden" name="ini_file_ids" id="ini_file_ids" value="{{data.ClusterFileIds}}" >
+        <input type="hidden" id="upload_id" value="222222222222222" >
+    </div>
+</div>
+<br>
+
+<div class="container">
+	<div class="modal fade" id="iniModal" role="dialog" data-backdrop="static" data-keyboard="false">
+		<div class="modal-dialog">
+			 <div class="modal-content modal-dynamic-content">
+			 <!-- calling content dynamicly -->
+			 </div>
+		 </div>
+	 </div>
+</div>
+
+<div class="container">
+	<div class="modal fade" id="iniResultModal" role="dialog" data-backdrop="static" data-keyboard="false">
+		<div class="modal-dialog">
+			 <div class="modal-content modal-result-dynamic-content">
+			 <!-- calling content dynamicly -->
+			 </div>
+		 </div>
+	 </div>
+</div>
+
+{% url 'portal:process_ini_file' as process_ini_file_ajax_url %}
+
+<script type="text/javascript">
+	function getRandomInt(min, max) {
+		return Math.floor(Math.random() * (max - min + 1)) + min;
+	}
+	function changeToken(){
+		jQuery('#upload_id').val('{{data.ClusterId}}_'+getRandomInt(10000000000,99999999999));
+	}
+	changeToken();
+	  var AddedFiles = 0;
+	  var fileArray = [] ;
+	  function removeFile(fileId){
+
+		myIndex = fileArray.indexOf(fileId);
+		if (myIndex !=(-1)){
+			fileArray.splice(myIndex,1);
+			jQuery("#ini_file_ids").val(JSON.parse(JSON.stringify(fileArray)));
+			jQuery('#tag-'+fileId).remove();
+
+			if (fileArray.length == 0) jQuery("#nofile").show();
+		}
+
+		}
+	  var btn = document.getElementById('upload-btn'),
+		  wrap = document.getElementById('pic-progress-wrap'),
+		  picBox = document.getElementById('picbox'),
+		  errBox = document.getElementById('errormsg'),
+		  count = 0;
+
+         {% if data.typePerm == 0 %}
+	   var uploader = new ss.SimpleUpload({
+			button: btn,
+			url: '/ini/file/?clusterId={{data.ClusterId}}',
+			progressUrl: '/ini/file/?type=progress',
+			name: 'myfile',
+			multiple: true,
+			multipart: true,
+			maxUploads: 9999999999999999,
+			maxSize: 10211111111114,
+			queue: true,
+			debug: true,
+			async : false,
+			hoverClass: 'btn-hover',
+			focusClass: 'active',
+			disabledClass: 'disabled',
+			responseType: 'json',
+			allowedExtensions : ['ini'],
+			onSubmit: function(filename, ext) {
+			openPopUp(jQuery('#upload_id').val()); //open popup	
+			errBox.innerHTML = '';
+			var progress = document.createElement('div'), // container for progress bar
+				//bar = document.createElement('div'), // actual progress bar
+				LoadingImage = document.createElement('div'), // actual progress bar
+				//fileSize = document.createElement('div'), // container for upload file size
+				wrapper = document.createElement('div'), // container for this progress bar
+				progressBox = document.getElementById('progressBox'); //on page container for progress bars				
+			  //progress.className = 'progress progress-striped LoadingImage';	
+			  progress.className = 'LoadingImage';				 
+			  //bar.className = 'progress-bar progress-bar-success ';
+			  LoadingImage.className = 'LoadingImage ';
+			  //fileSize.className = 'size';
+			  wrapper.className = 'wrapper ';
+			  //progress.appendChild(bar);
+			  progress.appendChild(LoadingImage);
+			  //wrapper.innerHTML = '<div class="name">'+filename+'</div>'; // filename is passed to onSubmit()
+			  //wrapper.appendChild(fileSize);
+			  wrapper.appendChild(progress);				
+			  progressBox.appendChild(wrapper); // just an element on the page to hold the progress bars			  // Assign roles to the elements of the progress bar//this.setProgressBar(bar); // will serve as the actual progress bar
+			  this.setProgressBar(LoadingImage); // will serve as the actual progress bar
+			  //this.setFileSizeBox(fileSize); // display file size beside progress bar
+			  this.setProgressContainer(wrapper); // designate the containing div to be removed after upload
+			  },
+			onSizeError: function() {
+						   errBox.innerHTML = '<div class="alert alert-danger" role="alert">  <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>  <span class="sr-only">Error:</span>  Files May Not Exceed 1024K.!</div>';
+						   jQuery('.alert-danger').delay(2000).fadeOut(1000)
+			  },
+			onExtError: function() {
+					errBox.innerHTML = '<div class="alert alert-danger" role="alert">  <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>  <span class="sr-only">Error:</span>  Invalid File Type. Please Select .ini Extension File!</div>';
+						   jQuery('.alert-danger').delay(2000).fadeOut(1000)
+			  },
+			onChange: function(file, response, btn) {
+				var self = this;
+				self.setData({
+					upload_id: jQuery('#upload_id').val()
+				});						
+			},
+			onComplete: function(file, response, btn) {
+
+				                changeToken();
+                                if (!response) {
+                                  errBox.innerHTML = 'Unable to upload file';
+                                  errBox.innerHTML = '<div class="alert alert-danger" role="alert">  <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>  <span class="sr-only">Error:</span>Unable To Upload File.!</div>';
+                                           jQuery('.alert-danger').delay(2000).fadeOut(1000)
+                                }
+                    if (response.success === true) {
+				   if (fileArray.length == 0)
+					 jQuery("#nofile").hide();
+				   if('{{clusterFiles}}'.length > 2)
+				   {
+					  jQuery("#nofile").show();
+				   }
+				   fileArray.push(response.response);					
+				   jQuery("#ini_file_ids").val(JSON.parse(JSON.stringify(fileArray)));
+				   //jQuery("#fileTags").append('<span id="tag-'+response.response+'" class="label label-success">'+response.name+' <span  class="glyphicon glyphicon-remove-sign" onClick="removeFile('+response.response+');" ></span>  </span>');
+				   jQuery("#fileTags").append('<span id="tag-'+response.response+'" ><span class="glyphicon glyphicon-file"></span> '+response.name+'</span><br>');
+				} else {
+					errBox.innerHTML = '<div class="alert alert-danger" role="alert">  <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>  <span class="sr-only">Error:</span>  Error In Uploading File(s)!</div>';
+					jQuery('.alert-danger').delay(2000).fadeOut(1000)
+				}
+			 },
+		});
+        {% endif %}
+
+		function openPopUp(folderID){
+				var folderID = folderID
+				jQuery('#iniModal').modal('show');
+				jQuery('.modal-dynamic-content').html(''
+					+'<div class="modal-header"><button type="button" class="close" onClick="cancel_ini_process();" data-dismiss="modal">&times;</button><h4 class="modal-title"> Cluster [{{data.ClusterId}}] - {{data.ClusterData.1}}</h4></div>'
+					+'<div class="modal-body">'
+					+'<label>.ini files</label>'
+					+'<div id="fileTags" class="ScrollStyleDiv"></div>'
+					+'<div id="progressBox" ></div>'
+					+'</div>'
+					+'<div class="modal-footer">'
+					+'<button id="cancel_ini_process" onClick="cancel_ini_process();" class="btn btn-danger btn-outline btn-round-sm" type="button" >Cancel</button>'
+					+'<button id="ini_process" onClick="process_ini_file(\''+folderID+'\');" class="btn btn-success btn-outline btn-round-sm" type="button">Process</button>'
+					+'</div>');
+		}
+		function cancel_ini_process(){
+			jQuery('#iniModal').modal('hide');
+			location.reload();			
+		}
+		function process_ini_file(folderID){
+		jQuery('#iniResultModal').modal('show');
+
+		jQuery('.modal-result-dynamic-content').html(''	
+					+'<div class="modal-header"></div>'
+					+'<div class="modal-body">'
+					+'<h4 class="modal-title text-center"> Loading...</h4><br>'
+					+'<div class="LoadingImage progress progress-bar"></div><br>'
+					+'<h4 class="modal-title text-center"> Please Wait ...</h4></div>'
+					+'<div class="modal-footer"> '
+					+'</div>');
+
+			jQuery('#iniModal').modal('show');	
+			 jQuery.ajax({
+				url: "/process-ini-file/",
+				type: "post",
+				 data: { csrfmiddlewaretoken: '{{ csrf_token }}', clusterId:'{{data.ClusterId}}', folderID:folderID},
+				success: function(response) { 
+				
+				var fetchedResult = "<div class='ScrollStyleDiv'><table class='table ScrollStyleDiv'>"
+				fetchedResult += "<tr><th>Section Id</th><th>TRR_ID</th><th>Result</th></tr>"
+				for (var i=0; i<response.length; i++) {							
+						fetchedResult += "<tr>"
+						fetchedResult += "<td><span class='"+response[i]['respClass']+"'></span> "+response[i]['secId']+"</td>"
+						fetchedResult += "<td>"+response[i]['MalwareIndex']+"</td>"
+						//fetchedResult += "<td>"+response[i]['type']+"</td>"
+						fetchedResult += "<td>"+response[i]['result']+"</td>"
+						//fetchedResult += "<td>"+response[i]['response']+"</td></tr>"						  
+						fetchedResult += "</tr>"						  
+				};
+				fetchedResult +="</table></div>"	
+				jQuery('#iniModal').modal('hide');	
+				jQuery('#iniResultModal').modal('show');
+				jQuery('.modal-result-dynamic-content').html(''
+					+'<div class="modal-header"><button type="button" class="close" onClick="cancel_ini_process();" data-dismiss="modal">&times;</button><h4 class="modal-title"> Result For Cluster Id : {{data.ClusterId}}</h4></div>'
+					+'<div class="modal-body">'
+					+'<label>INI file details :  </label>'+fetchedResult
+					+'</div>'
+					+'<div class="modal-footer">'
+					+'<button id="cancel_ini_process" onClick="cancel_ini_process();" class="btn btn-primary btn-outline btn-round-sm glyphicon glyphicon-check" type="button" >OK</button>'
+					+'</div>');
+				
+				},
+ error: function (textStatus, errorThrown) {
+				jQuery('#iniResultModal').modal('hide');
+                alert(textStatus);
+				if(errorThrown)
+				{
+				jQuery('#iniModal').modal('hide');
+				location.reload();
+				return;
+				}
+				errBox.innerHTML = '<div class="alert alert-danger" role="alert">  <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>  <span class="sr-only">Error:</span>  Invalid File Details.!</div>';
+				jQuery('.alert-danger').delay(2000).fadeOut(1000)
+                Success = false;//doesnt goes here
+            }
+			});
+			jQuery('#iniModal').modal('hide');	
+		}
+</script>
+
+<div class="row">
+<div class="col-sm-12" id="signatureData">
+ <h4 class="well well-sm">Signature Details For {{data.ClusterData.1}}</h4>
+    <input type="hidden" id="sigcnt" value="" />
+  <div class="row col-sm-12">
+    <table id="build-list-signature" class="display " cellspacing="0" width="100%">
+      <thead>
+        <tr>
+          <th>SigID</th>
+          <th>TRR_ID</th>
+          <th>Threat Name</th>
+          <th>PatternCount</th>
+          <th>Type</th>
+           <th>Cluster</th>
+            <th>State</th>
+             <th>View</th>
+        </tr>
+      </thead>
+      <tfoot>
+        <tr>
+          <th>SigID</th>
+          <th>TRR_ID</th>
+          <th>Threat Name</th>
+          <th>PatternCount</th>
+          <th>Type</th>
+           <th>Cluster</th>
+           <th>State</th>
+             <th>View</th>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+</div>
+
+<script type="text/javascript">
+
+jQuery(document).ready(function() {
+ jQuery('#signatureData').hide();
+ jQuery('.exportSig').hide();
+ jQuery('[data-toggle="tooltip"]').tooltip();
+
+    table = jQuery('#build-list-signature').DataTable( {
+        "processing": true,
+        "serverSide": true,
+		"order": [[ 0, "desc" ],[1,""],[2,""],[3,""],[4,""],[5,""],[6,""]],
+        "ajax": {"url": "/signature/list/ajax/?ClusterId={{data.ClusterId}}",},
+		"language": {"processing": "<div class='processing'> Processing ...</div>"},
+		"columns": [{ "data": "RecordId" },{"data" : "MalwareIndex" },{ "data": "MalwareName" },{ "data": "SigCount" },{"data" : "Type"},{ "data": "ClusterName" },{"data":"State"},{ "data": "view" }],
+
+         "autoWidth": false,
+          "drawCallback": function(settings) {
+                      if( settings.json.recordsTotal == 0)
+                      {
+                      jQuery('#signatureData').hide();
+                      jQuery('.exportSig').hide();
+                      }
+                      else
+                      {
+                       jQuery('#sigcnt').val(settings.json.recordsTotal);
+                        jQuery('#signatureData').show();
+                      jQuery('.exportSig').show();
+                      }
+                     },
+             "columnDefs": [
+                           {  "targets": 6,"sClass": "text-right","bSortable": false },
+                             { "targets": [4,5,6], "visible": false},
+
+                           ],
+            "orderCellsTop": true,
+    } );
+    jQuery('#build-list-signature_filter').html('');
+    jQuery('#build-list-signature tfoot th').each( function () {
+        var title = jQuery(this).text();
+        if (title != 'View')
+        {
+        len = jQuery(this).text().length;
+        jQuery(this).html( '<input id="search_'+title+'" type="text" placeholder="'+title+'" />' );
+        }
+    } );
+    // DataTable
+
+    table.columns().every( function () {
+        var that = this;
+        jQuery( 'input', this.footer() ).on( 'keyup change', function () {
+            if ( that.search() !== this.value ) {
+                that
+                    .search( this.value )
+                    .draw();
+            }
+        } );
+    } );
+} );
+
+
+</script>
+
+{% if data.recentActivities %}
+<div>{{data.recentActivities|safe}}</div>
+{% endif %}
+
+<script type="text/javascript">
+  function confirmDelete()
+  {
+    if(jQuery('#sigcnt').val() == '')
+    {
+    jQuery.colorbox({innerWidth:250,innerHeight:95,fixed: true,html:'<b><center></br>Confirm Delete Cluster #{{data.ClusterData.0}}?</b></br></br><a class="btn btn-primary btn-outline" href="/cluster_delete/{{data.ClusterData.0}}">Delete</a>&nbsp;&nbsp;<a class="btn btn-primary btn-outline" href="/cluster/{{data.ClusterData.0}}?action=view">Cancel</a></center>', escKey:true,overlayClose:true,onLoad: function() {jQuery('#cboxClose').show();}});
+    }
+    else
+    {
+      jQuery.colorbox({innerWidth:400,innerHeight:50,fixed: true,html:'<b><center><br><span class="glyphicon glyphicon-exclamation-sign"></span>&nbsp;No permission to delete cluster it contains signature</center>', escKey:true,overlayClose:true,onLoad: function() {jQuery('#cboxClose').show();}});
+     }
+  }
+</script>
+
+{% endblock %} 

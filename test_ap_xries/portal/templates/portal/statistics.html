@@ -1,0 +1,95 @@
+{% extends "portal/base.html" %}
+
+{% block content %}
+{% load staticfiles %}
+<link href="{% static 'portal/css/dataTables.min.css' %}" rel="stylesheet">
+<script src="{% static 'portal/js/dataTables.min.js' %}"></script>
+<script src="{% static 'portal/js/angular/angular.min.js' %}"></script>
+<script src="{% static 'portal/js/angular/controller/myStatistics.js' %}"></script>
+<script src="{% static 'portal/js/amcharts/amcharts.js' %}"></script>
+<script src="{% static 'portal/js/amcharts/pie.js' %}"></script>
+<script src="{% static 'portal/js/amcharts/plugins/export/export.min.js' %}"></script>
+<link rel="stylesheet" href="{% static 'portal/js/amcharts/plugins/export/export.css' %}"  type="text/css" media="all" />
+<script src="{% static 'portal/js/amcharts/themes/light.js' %}"></script>
+<script>
+
+function createChart(mydiv,title="",data){
+
+
+var chart = AmCharts.makeChart( mydiv, {
+  "type": "pie",
+  "theme": "light",
+  "dataProvider": data,
+  "valueField": "count",
+  "titleField": "name",
+   "balloon":{
+   "fixedPosition":true
+  },
+
+  "legend": {
+		"enabled": false,
+
+		"align": "center",
+	//	"valueWidth": 4,
+		"combineLegend": true,
+		//"backgroundColor": "#CCC",
+		"backgroundAlpha": 0.7,
+	},
+
+	"titles": [
+		{
+			"id": mydiv+"_title",
+			"text": title
+		}
+	],
+  "export": {
+    "enabled": false
+  }
+} );
+
+return chart;
+}
+
+
+
+</script>
+
+<div class="row" ng-app="myStatApp"  ng-controller="myStatController" >
+  <div class="col-lg-12" >
+
+      <p>  <select   ng-options="typecode as type for (typecode, type) in types"   ng-model="selectedClusterType"  ng-change="updateSignatureView()"></select> </p>
+      <div class="myStatSummery">
+
+
+
+                <h2 ng-bind="selectedType"></h2>
+
+
+
+
+
+
+
+
+
+                <div class="col-lg-6" >
+                  <div ng-bind="mytable"></div>
+
+                    <div id="chartAll" class="amChart-user"></div>
+
+                    </div>
+          <div class="col-lg-6" >
+                    <div id="chartUserAll" class="amChart-user"></div>
+
+                    </div>
+      </div>
+
+
+  </div>
+</div>
+
+
+
+{% endblock %}
+
+

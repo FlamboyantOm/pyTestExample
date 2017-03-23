@@ -1,0 +1,41 @@
+{% extends "portal/base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <h4 class="well well-sm">Updated Fields In Cluster : {{ClusterName}}</h4>
+            <table class="table col-lg-12" >
+                 <tr>
+                     <th  class="col-lg-4">ClusterField</th>
+                     <th class="col-lg-4">Old Value</th>
+                     <th class="col-lg-4" >New Value</th>
+                 </tr>
+
+                {% for key,value in data.items %}
+                  <tr>
+                    <th>{{key}}</th>
+                      {% if value.old == '' %}
+                    <td> - </td>
+                      {% else %}
+                      <td>{{ value.old }}</td>
+                      {% endif %}
+                        {% if value.new == '' %}
+                    <td> - </td>
+                      {% else %}
+                      <td>{{value.new}}</td>
+                      {% endif %}
+                  </tr>
+                  {% endfor %}
+            </table>
+    </div>
+
+
+    <div  class="row col-sm-12">
+       <div class="row col-sm-12" ><p class="col-sm-2"> <span class="glyphicon glyphicon-user"/>&nbsp;<b>UpdatedBy </b></p><p class="col-sm-4"><a href="/user/{{UserName}}">{{UserName}}</a></p> </div>
+       <div class="row col-sm-12"><p class="col-sm-2"><span class="glyphicon glyphicon-ruble"/>&nbsp;<b>UserIp    </b></p><p class="col-sm-4">  {{UserIp}}</p>  </div>
+       <div class="row col-sm-12"><p class="col-sm-2"> <span class="glyphicon glyphicon-calendar"/>&nbsp;<b>UpdatedTime  </b></p> <p class="col-sm-4">  {{LogTime}}</p></div>
+    </div>
+
+
+</div>
+{% endblock %} 

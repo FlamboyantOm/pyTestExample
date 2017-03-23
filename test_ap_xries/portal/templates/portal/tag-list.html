@@ -1,0 +1,87 @@
+{% extends "portal/base.html" %}
+
+{% block content %}
+{% load staticfiles %}
+<link href="{% static 'portal/css/dataTables.min.css' %}" rel="stylesheet">
+<script src="{% static 'portal/js/dataTables.min.js' %}"></script> 
+
+<div class="row">
+  <div class="col-lg-5 taglist">
+    <table id="build-list"  class="display shadow-in dataTable" cellspacing="0" width="100%">
+      <thead>
+        <tr>
+          <th>Tag</th>
+          <th>Count</th>
+           <th>View</th>
+        </tr>
+      </thead>
+      <tfoot>
+        <tr>
+          <th>Tag</th>
+          <th>Count</th>
+           <th>View</th>
+        </tr>
+      </tfoot>
+    </table>
+
+<script type="text/javascript">
+
+jQuery(document).ready(function() {
+ jQuery('.taglist').hide();
+ jQuery('[data-toggle="tooltip"]').tooltip();
+    table = jQuery('#build-list').DataTable( {
+        "processing": true,
+        "serverSide": true,
+		"order": [[ 0, "desc" ],[1,""],[2,""]],
+        "ajax": {"url": "/tag/list/ajax/",},
+		"language": {"processing": "<div class='processing'> Processing ...</div>"},
+		"columns": [{ "data": "Tag" },{"data" : "TagCount" },{ "data": "View" }],
+          "autoWidth": false,
+          "columnDefs": [
+                      { "width": "5%", "targets": 0 },
+                      { "sClass": "text-right","width": "5%", "targets": 2,"bSortable": false},
+
+                      ],
+          "fnDrawCallback": function (resp) {
+
+                                        if(resp._iRecordsTotal == 0)
+                                        { jQuery('.emptyRecord').show();
+                                         jQuery('.taglist').hide();
+                                        }
+                                        else
+                                        { jQuery('.emptyRecord').hide();
+                                           jQuery('.taglist').show();
+                                        }
+                        },
+   } );
+    jQuery('#build-list_filter').html('');
+    jQuery('#build-list tfoot th').each( function () {
+        var title = jQuery(this).text();
+        if (title != 'View')
+        {
+        len = jQuery(this).text().length;
+        jQuery(this).html( '<input id="search_'+title+'" type="text" placeholder="'+title+'" />' );
+        }
+    } );
+    // DataTable
+
+    table.columns().every( function () {
+        var that = this;
+        jQuery( 'input', this.footer() ).on( 'keyup change', function () {
+            if ( that.search() !== this.value ) {
+                that
+                    .search( this.value )
+                    .draw();
+            }
+        } );
+    } );
+} );
+
+
+</script> 
+  </div>
+</div>
+<div class="row col-lg-12 emptyRecord" hidden>
+      <span class="alert-info" ><h3><strong>Tag data not available</strong></h3></span>
+</div>
+{% endblock %} 

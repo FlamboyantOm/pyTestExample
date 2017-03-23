@@ -1,0 +1,150 @@
+{% extends "portal/base.html" %}
+{% block content %}
+{% load staticfiles %}
+
+<link href="{% static 'portal/css/dataTables.min.css' %}" rel="stylesheet">
+<script src="{% static 'portal/js/dataTables.min.js' %}"></script> 
+
+<script type="text/javascript">
+  function loadDefault(tableName,indexID, searchString) {
+            cnt = 0;
+            tableName.columns().every(function() {
+                var that = this;
+                if(cnt == indexID)
+                    that.search(searchString).draw();
+
+                cnt++;
+            });
+        }
+
+</script>
+
+<div class="col-lg-12 row">
+  <div id="build-list-div">
+      <table id="build-list" class="display shadow-in" cellspacing="0" width="100%">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>CreatedBy</th>
+            <th>Assign</th>
+            <th>Created</th>
+            <th>Modified</th>
+            <th>Source</th>
+            <th>Priority</th>
+
+            <th>SigCnt</th>
+            <th>Prog(%)</th>
+            <th>Type</th>
+            <th>View</th>
+          </tr>
+        </thead>
+        <tfoot>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>CreatedBy</th>
+            <th>Assign</th>
+            <th>Created</th>
+            <th>Modified</th>
+            <th>Source</th>
+            <th>Priority</th>
+
+            <th>SigCnt</th>
+            <th>Prog(%)</th>
+            <th>Type</th>
+            <th>View</th>
+          </tr>
+        </tfoot>
+      </table>
+  </div>
+
+  <div class=" col-lg-12 emptyRecord " hidden>
+      <span class="alert-info" ><h3><strong >Cluster data not available</strong></h3></span>
+  </div>
+</div>
+
+<script type="text/javascript">
+        jQuery(document).ready(function() {
+        jQuery('#build-list-div').hide();
+        url = "/cluster/list/ajax/";
+
+         jQuery('.alert-success').delay(2000).fadeOut(1000);
+         jQuery('[data-toggle="tooltip"]').tooltip();
+            table = jQuery('#build-list').DataTable( {
+                "processing": true,
+                "serverSide": true,
+                "order": [[ 0, "desc" ],[1,""],[2,""],[3,""],[4,""],[5,""],[6,""],[7,""],[8,""]],
+                "ajax": {"url": url},
+                "language": {"processing": "<div class='processing'> Processing ...</div>" },
+                "columns": [{ "data": "ClusterID" },{ "data": "ClusterName" },{ "data": "CreatedBy" },{ "data": "ClusterAssignedTo" },{ "data": "CreatedDate" },{ "data": "ModifiedDate" },{ "data": "Source" },{"data":"Priority"},{"data":"SignatureCount"},{"data":"Progress"},{"data":"Type"},{ "data": "View" }],
+                 "columnDefs": [
+                              { "width": "15%", "targets": 1 },
+                              { "width": "11%", "targets": 8 },
+
+                              {  "targets": 11,"sClass": "text-right" ,"bSortable": false},
+
+                              ],
+
+
+                 "autoWidth": false,
+                 "fnDrawCallback": function (resp) {
+                                        if(resp._iRecordsTotal == 0)
+                                        {
+                                             jQuery('.emptyRecord').show();
+                                             jQuery('#build-list-div').hide();
+                                        }else { jQuery('#build-list-div').show(); }
+                         },
+            } );
+
+            jQuery('#build-list_filter').html('');
+
+            requestTitleArr = ['CreatedBy','Assign','Priority']
+            requestVal = ["{{request.GET.CreatedBy}}","{{request.GET.ClusterAssignedTo}}","{{request.GET.Priority}}"]
+
+            jQuery('#build-list tfoot th').each( function () {
+                var title = jQuery(this).text();
+                if (title != 'View'){
+                  if(jQuery.inArray(title,requestTitleArr) !=- 1)
+                  {
+                    if(requestVal[requestTitleArr.indexOf(title)])
+                      jQuery(this).html( '<input id="searchC_'+title+'" type="text" placeholder="'+title+'" value="'+requestVal[requestTitleArr.indexOf(title)]+'"/>');
+                    else
+                      { jQuery(this).html( '<input id="searchC_'+title+'" type="text" placeholder="'+title+'" />' );}
+                  }
+                  else{
+                    jQuery(this).html( '<input id="searchC_'+title+'" type="text" placeholder="'+title+'" />' );}
+                  }
+            } );
+
+            // DataTable
+
+            table.columns().every( function () {
+                var that = this;
+                jQuery( 'input', this.footer() ).on( 'keyup change', function () {
+                    if ( that.search() !== this.value ) {
+                        that
+                            .search( this.value )
+                            .draw();
+                    }
+                } );
+            } );
+
+
+           {% if request.GET.Priority and  request.GET.CreatedBy or request.GET.ClusterAssignedTo  %}
+
+             {% if request.GET.CreatedBy %}
+                 loadDefault(table,7, '{{request.GET.Priority}}');
+                 loadDefault(table,2, '{{request.GET.CreatedBy}}');
+              {% endif %}
+
+                {% if request.GET.ClusterAssignedTo %}
+                      loadDefault(table,7, '{{request.GET.Priority}}');
+                      loadDefault(table,3, '{{request.GET.ClusterAssignedTo}}');
+                {% endif %}
+          {% endif %}
+        } );
+
+
+    </script>
+{% endblock %} 

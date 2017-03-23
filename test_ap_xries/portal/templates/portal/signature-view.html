@@ -1,0 +1,360 @@
+{% extends "portal/base.html" %}
+
+{% block content %}
+  {% load staticfiles %}
+<script src="{% static 'portal/js/bootstrap-tagsinput.js' %}"></script>
+
+
+<div class="row" >
+      <div class="col-lg-9">
+        <table class="table" >
+                 <tr>
+                    <th  class="col-lg-2">TRR_ID</th>
+                    <td>{{data.MalwareIndex}} </td>
+                  </tr>
+
+                  <tr>
+                    <th class="col-lg-2" >Threat Name</th>
+                    <td >{{data.ThreatName}} </td>
+                  </tr>
+
+                 {% if data.AuthorName %}
+                  <tr>
+                    <th class="col-lg-2" >Added By</th>
+                    <td><a href="/user/{{data.AuthorName}}"><span class="glyphicon glyphicon-user"></span>&nbsp;{{data.AuthorName}}</a></td>
+                  </tr>
+            {% endif %}
+
+                  <tr>
+                    <th>INI File</th>
+                    <td><a href="/downloadIniFile/?id={{data.sid}}" id="inipath" target="_blank"  data-toggle="tooltip" data-placement="bottom" title="Export ini"><span class="glyphicon glyphicon-export"></span>&nbsp;Export(.ini) </a></td>
+                  </tr>
+
+                  {% if data.fileType %}
+                   <tr>
+                        <th  class="col-lg-2">File Type</th>
+                        <td>{% for file in data.fileType %}
+                       <span class="glyphicon glyphicon-file"></span>&nbsp;{{file}}<br>
+                         {%endfor %}
+                        </td>
+                   </tr>
+                  {% endif %}
+
+                  {% if 'SCAN_RULE' in data.ClusterFieldAllowed  and data.ScanRule != "NULL" %}
+                  <tr>
+                     <th class="col-lg-2" >ScanRule</th>
+                     <td >{{data.ScanRule}} </td>
+                  </tr>
+                 {% endif %}
+
+                 {% if 'SCAN_RULE_SUSP' in data.ClusterFieldAllowed and data.ScanRuleSusp != "NULL" %}
+                 <tr>
+                    <th class="col-lg-2" >ScanRuleSusp</th>
+                    <td >{{data.ScanRuleSusp}} </td>
+                 </tr>
+                {% endif %}
+
+                {% if data.ScanRuleSequence and data.ScanRuleSusp != "NULL" or  data.ScanRule != "NULL"%}
+                 <tr>
+                     <th class="col-lg-2" >ScanRuleSequence</th>
+                     <td >{{data.ScanRuleSequence}} </td>
+                 </tr>
+                {% endif %}
+
+                {% if 'POLYFUNC' in data.ClusterFieldAllowed  and data.PolyFuncIndex %}
+                  <tr>
+                    <th class="col-lg-2" >PolyFuncIndex</th>
+                    <td >{{data.PolyFuncIndex}} </td>
+                  </tr>
+                {% endif %}
+
+                {% if 'SUS_WEAK_DETECTION' in data.ClusterFieldAllowed  and data.susWeakDetection %}
+                  <tr>
+                    <th class="col-lg-2" >SusWeakDetection</th>
+                    <td >{{data.susWeakDetection}} </td>
+                </tr>
+                {% endif %}
+
+                {% if 'STATUS' in data.ClusterFieldAllowed  and data.status %}
+                  <tr>
+                    <th class="col-lg-2" >Silent</th>
+                    <td >{{data.status}} </td>
+                 </tr>
+               {% endif %}
+
+                {% if data.State %}
+                  <tr>
+                    <th class="col-lg-2" >State</th>
+                    <td >{{data.State}} </td>
+                  </tr>
+                 {% endif %}
+
+                 {% if data.tagResult %}
+                    <tr>
+                        <th class="col-lg-2">Tag</th>
+                        <td>
+                           <input id="tagsinput"   value="{{data.tagResult|safe}}"  class="form-control" />
+                        </td>
+                    </tr>
+                 {% endif %}
+
+                {% if data.RecordComment %}
+                    <tr>
+                        <th >Comment</th>
+                        <td class="ageRecord">
+                           {{data.RecordComment}}
+                        </td>
+                    </tr>
+                {% endif %}
+        </table>
+      </div>
+
+     <div class="col-lg-3">
+        <table class="table" id="view_cluster_details">
+          <tr>
+            <th>ClusterName</th>
+            <td colspan="5" ><a href="/cluster/{{data.cluster.id}}/?action=view">{{data.cluster.cluster_name}}</a> </td>
+          </tr>
+          <tr>
+            <th >Created By</th>
+            <td colspan="5" ><a href="/user/{{data.cluster.cluster_createdby}}"><span class="glyphicon glyphicon-user"></span>&nbsp;{{data.cluster.cluster_createdby}}</a></td>
+          </tr>
+          <tr>
+            <th >Priority</th>
+            <td colspan="5" > P{{data.cluster.cluster_priority}}</td>
+          </tr>
+          <tr>
+            <th class="col-lg-2">Type</th>
+            <td>{{data.cluster.type}}</td>
+          </tr>
+        </table>
+     </div>
+</div>
+
+{% if data.signatures.items %}
+    <div class="row col-lg-12">
+         <br><p><label>Signature Pattern Details</label></p>
+             <table class="patterntable shadow-in">
+                 <thead class="Header">
+                    <tr>
+                        <th class="col-lg-1">Key </th>
+                        <th class="col-lg-11">Pattern</th>
+                        <th class="col-lg-2" ></th>
+                    </tr>
+                </thead>
+              <tbody>
+                 {% for key,value in data.signatures.items  %}
+                 <tr>
+                     <td><center id="key[{{ forloop.counter }}]">{{key}}</center> </td>
+                     <td  id="pattern[{{ forloop.counter }}]" onclick="getPatternDetails({{ forloop.counter }})" data-toggle="modal" data-target="#patternDetails" title="View Pattern Details" role="button">{{value.pattern}}</td>
+                     <td><span class="label label-primary" onclick="getPatternDetails({{ forloop.counter }})" data-toggle="modal" data-target="#patternDetails" title="View Pattern Details" role="button">View</span> </td>
+
+                     {% if 'LOCATION_ID' in data.ClusterFieldAllowed %}
+                     <td id="LocId[{{ forloop.counter }}]" hidden="hidden">{{value.LocId}}</td>
+                     {% endif %}
+
+                     {% if 'BUFFER' in data.ClusterFieldAllowed %}
+                     <td id="buff[{{ forloop.counter }}]" hidden="hidden">{{value.BuffSize}}</td>
+                     {% endif %}
+
+                     {% if 'OFFSET' in data.ClusterFieldAllowed %}
+                     <td id="offset[{{ forloop.counter }}]" hidden="hidden">{{value.Offset}}</td>
+                     {% endif %}
+
+                     {% if 'CLEANUP_TYPE' in data.ClusterFieldAllowed %}
+                     <td id="cut[{{ forloop.counter }}]" hidden="hidden">{{value.CleanupType}}</td>
+                     <td id="startToken[{{ forloop.counter }}]" hidden="hidden">{{value.startToken}}</td>
+                     <td id="endToken[{{ forloop.counter }}]" hidden="hidden">{{value.endToken}}</td>
+                     {% endif %}
+
+                     {% if 'WEAK_SIG' in data.ClusterFieldAllowed %}
+                     <td id="weakSig[{{ forloop.counter }}]" hidden="hidden">{{value.WeakSig}}</td>
+                     {% endif %}
+
+                     {% if 'DISTANCE' in data.ClusterFieldAllowed %}
+                     <td id="distance[{{ forloop.counter }}]" hidden="hidden">{{value.Distance}}</td>
+                     {% endif %}
+
+                     <td id="comment[{{ forloop.counter }}]" hidden="hidden">{{value.Comment}}</td>
+                 </tr>
+                 {% endfor %}
+              </tbody>
+             </table>
+    <br>
+    </div>
+{% endif %}
+
+{% if data.filterRecord %}
+    <div class="row col-lg-12">
+         <br><label>Filter Details</label>
+             <table class="filterDatatable shadow-in">
+                  {% if 'FILTER' in data.ClusterFieldAllowed  %}
+                     <thead class="Header">
+                        <tr><th class="col-lg-1">Key </th><th class="col-lg-4">Filter Field</th><th class="col-lg-4">Filter Operation</th><th class="col-lg-3">Filter Field Input</th></tr>
+                     </thead>
+                     <tbody>
+                          {% for filterData in data.filterRecord %}
+                             <tr>
+                                 <td><center>{{filterData.id}}</center> </td><td>{{filterData.FilterField}}</td><td>{{filterData.FilterOperation}}</td><td>{{filterData.FilterFieldInput}}</td>
+                             </tr>
+                          {% endfor %}
+                      </tbody>
+                 {% endif %}
+             </table>
+    <br>
+    </div>
+{% endif %}
+
+{% if data.malwareIndexHistory %}
+    <div class="row col-lg-12">
+        <p><label>Previous Record</label></p>
+        <table class="malwareIndexHistory shadow-in" >
+            <thead class="Header">
+                 <tr><th class="col-lg-6">Threat Name</th><th class="col-lg-2">Pattern Count</th><th class="col-lg-2">Created By</th><th class="col-lg-2">Created Date</th><th></th></tr>
+            </thead>
+            <tbody>
+             {% for malwareIndexRecord in data.malwareIndexHistory %}
+                <tr>
+                    <td>{{malwareIndexRecord.1}}</td>
+                    <td>{{malwareIndexRecord.2}}</td>
+                    <td><a href="/user/{{malwareIndexRecord.4}}/">{{malwareIndexRecord.4}}</a></td>
+                    <td>{{malwareIndexRecord.3}}</td>
+                   <td class="text-right"><a class="label label-primary " href="/signature/history/{{data.clusterType}}/{{data.MalwareIndex}}/{{malwareIndexRecord.0}}?action=view" target="_blank">View</a></td>
+                </tr>
+             {% endfor %}
+           </tbody>
+        </table><br>
+    </div>
+{% endif %}
+
+{% if data.editPerm == 0 %}
+    <div class="row">
+        <div class="col-lg-12">
+             <a href="/signature/?action=add&id={{data.sid}}" class="btn btn-primary btn-outline " ><span class="glyphicon glyphicon-edit" ></span> Edit Signature</a>
+             <a class="btn btn-danger btn-outline" onclick="confirmDelete();"><span class="glyphicon glyphicon-remove" ></span>&nbsp;Delete Signature</a>
+         </div>
+    </div>
+{% endif %}
+
+<div class="modal fade" id="patternDetails" role="dialog">
+  <div class="modal-dialog" >
+    <div class="modal-content">
+      <div class="modal-header ">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h3 class="modal-title "><b>Pattern Details</b> </h3>
+      </div>
+      <div class="modal-body model-mainContent " >
+        <div class="col-lg-12 content-data" >
+          <p class="col-lg-12"><span class="col-lg-3"><b>Pattern</b></span> <span id="pattern" class="col-lg-9"></span></p>
+          <p class="col-lg-12"><span class="col-lg-3"><b> Ascii</b></span> <span  id="ascii" class="col-lg-9"></span></p>
+            {% if 'CLEANUP_TYPE' in data.ClusterFieldAllowed  %}
+              <p class="col-lg-12"><span class="col-lg-3"><b> CleanUpType</b> </span><span  id="cleanuptype" class="col-lg-8"></span></p>
+              <p class="col-lg-12 startToken" hidden="hidden"><span class="col-lg-3"><b> StartToken</b> </span><span  id="startToken" class="col-lg-8"></span></p>
+              <p class="col-lg-12 endToken" hidden="hidden"><span class="col-lg-3"><b> endToken</b> </span><span  id="endToken" class="col-lg-8"></span></p>
+          {% endif %}
+          {% if 'LOCATION_ID' in data.ClusterFieldAllowed  %}
+            <p class="col-lg-12"><span class="col-lg-3"><b> LocationId </b> </span> <span  id="siglocationId" class="col-lg-9"></span></p>
+          {% endif %}
+          {% if 'WEAK_SIG' in data.ClusterFieldAllowed  %}
+              <p class="col-lg-12"><span class="col-lg-3"><b> WeakSig </b> </span> <span  id="sigweakSig" class="col-lg-9"></span></p>
+          {% endif %}
+          {% if 'OFFSET' in data.ClusterFieldAllowed %}
+              <p class="col-lg-12"><span class="col-lg-3"><b> Offset </b> </span> <span  id="sigoffset" class="col-lg-9"></span></p>
+          {% endif %}
+
+          {% if 'BUFFER' in data.ClusterFieldAllowed %}
+              <p class="col-lg-12"><span class="col-lg-3"><b> BufferSize </b> </span> <span  id="sigbufferSize" class="col-lg-9"></span></p>
+          {% endif %}
+          <p class="col-lg-12"><span class="col-lg-3"><b> Distance </b> </span> <span  id="sigDistance" class="col-lg-9"></span></p>
+          <p class="col-lg-12"><span class="col-lg-3"><b> Comment </b> </span> <span  id="comment" class="col-lg-9"></span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+jQuery(document).ready(function()
+{
+ jQuery("#tagsinput").tagsinput();
+ jQuery('.bootstrap-tagsinput input').hide();
+ jQuery('.bootstrap-tagsinput span').removeClass('label label-info');
+ jQuery('.bootstrap-tagsinput span').addClass('label label-primary');
+});
+
+function confirmDelete()
+{
+    jQuery.colorbox({innerWidth:250,innerHeight:115,fixed: true,html:'<b><center></br>Confirm Delete Signature For Siganture Id #{{data.sid}}?</b></br></br><a class="btn btn-primary btn-outline" href="/signature_delete/{{data.sid}}">Delete</a>&nbsp;&nbsp;<a class="btn btn-primary btn-outline" href="/signature/{{data.sid}}/?action=view">Cancel</a></center>', escKey:true,overlayClose:true,onLoad: function() {jQuery('#cboxClose').show();}});
+}
+
+function getPatternDetails(id){
+        jQuery('#patternDetails .modal-title b').text("Pattern Details For "+document.getElementById("key["+id+"]").innerHTML);
+
+        jQuery('#patternDetails #pattern').text(document.getElementById("pattern["+id+"]").innerHTML);
+
+        jQuery('#patternDetails #ascii').text( convertToAscii(document.getElementById("pattern["+id+"]").innerHTML));
+
+        {% if 'CLEANUP_TYPE' in data.ClusterFieldAllowed  %}
+
+        jQuery('#patternDetails #cleanuptype').text(document.getElementById("cut["+id+"]").innerHTML);
+
+        jQuery('#patternDetails #startToken').text(document.getElementById("startToken["+id+"]").innerHTML);
+        jQuery('#patternDetails #endToken').text(document.getElementById("endToken["+id+"]").innerHTML);
+        if(jQuery('#patternDetails #startToken').text() != '')
+        { jQuery('#patternDetails .startToken').show(); jQuery('#patternDetails .endToken').show();}
+        else{jQuery('#patternDetails .startToken').hide(); jQuery('#patternDetails .endToken').hide();}
+        {% endif %}
+
+       {% if 'LOCATION_ID' in data.ClusterFieldAllowed  %}
+           if(document.getElementById("LocId["+id+"]").innerHTML.length)
+             {jQuery('#patternDetails #siglocationId').text(document.getElementById("LocId["+id+"]").innerHTML);}
+            else{jQuery('#patternDetails #siglocationId').text('-');}
+       {% endif %}
+
+     {% if 'OFFSET' in data.ClusterFieldAllowed %}
+        jQuery('#patternDetails #sigoffset').text(document.getElementById("offset["+id+"]").innerHTML);
+      {% endif %}
+
+     {% if 'BUFFER' in data.ClusterFieldAllowed %}
+           jQuery('#patternDetails #sigbufferSize').text(document.getElementById("buff["+id+"]").innerHTML);
+      {% endif %}
+      {% if 'WEAK_SIG' in data.ClusterFieldAllowed  %}
+          jQuery('#patternDetails #sigweakSig').text(document.getElementById("weakSig["+id+"]").innerHTML);
+     {% endif %}
+
+      {% if 'DISTANCE' in data.ClusterFieldAllowed  %}
+          jQuery('#patternDetails #sigDistance').text(document.getElementById("distance["+id+"]").innerHTML);
+     {% endif %}
+
+      if(document.getElementById("comment["+id+"]").innerHTML)
+      {    jQuery('#patternDetails #comment').text(document.getElementById("comment["+id+"]").innerHTML);}
+      else
+      { jQuery('#patternDetails #comment').text('-');  }
+
+       jQuery('#patternDetails #sigDistance').text();
+       jQuery('#patternDetails #comment').text();
+}
+
+function convertToAscii(str) {
+      var hex = str.toString();
+      var str = '';
+      for (var n = 0; n < hex.length; n+=2) {
+          if(hex[n]+""+hex[n+1] == '??')
+          {
+                str += "?";
+          }
+          else  if( (hex[n]+""+hex[n+1]).toUpperCase() == '3F')
+          {
+                str += "\\?";
+          }
+          else
+          {
+             str += String.fromCharCode(parseInt(hex.substr(n, 2), 16));
+          }
+      }
+      return str;
+      }
+</script>
+{% endblock %}
+
+

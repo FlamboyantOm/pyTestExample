@@ -1,0 +1,31 @@
+Wednesday, September 21, 2016, 15:42:44.
+
+
+Scanning: D:\web\apex\data\ini\20160921_150344_7_20160921_154244_mbopp9eloi8hatiqq339g8117b1dtbb9\1.ini
+
+[7_20160921_154244_mbopp9eloi8hatiqq339g8117b1dtbb9]
+Skipped: D.Sig: Invalid Signature length
+
+--------------------------------------------------------------------------
+
+Scan Complete
+
+Success: Sql Db file created/updated successfully
+
+--------------------------------------------------------------------------
+
+Scan Summary
+
+Total Files Scanned     = 1
+Total Records Found     = 1
+Total Records Added     = 0
+Total Duplicate Records = 0
+Total Records Updated   = 0
+Total Records Skipped   = 1
+
+Start Time    : 15:42:44 
+End Time      : 15:42:44 
+Total Time    : 00:00:00
+
+
+--------------------------------------------------------------------------

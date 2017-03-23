@@ -1,0 +1,263 @@
+{% extends "portal/base.html" %}
+
+{% block content %}
+    {% load staticfiles %}
+
+<script src="{% static 'portal/js/jquery.validate.min.js' %}"></script>
+<script src="{% static 'portal/js/additional-methods.min.js' %}"></script>
+
+<script type="text/javascript">
+	jQuery().ready(function() {
+            jQuery.validator.addMethod("alphanumeric", function(value, element) {
+        return this.optional(element) || /^[a-z0-9\_\s]+$/i.test(value);
+    }, "Must contain only letters,numbers or underscore.");
+		jQuery("#clusterForm").validate({
+			rules: {
+				ClusterName: {required: true,minlength:2,maxlength:80,alphanumeric:true},
+				Source : {required:true},
+				otherSource : {required:true,minlength:2,maxlength:80,alphanumeric:true},
+				ClusterAssignedTo : {required:true},
+				Priority : {required:true},
+				Type : {required:true},
+				State : {required:true},
+				Progress : {required:true},
+				ClusterNotes : {minlength:2,maxlength:400,alphanumeric:true},
+				myfile : {required:{depends: function () {
+				                if("{{data.clusterDetails.ClusterId}}")
+				                return false
+				                else
+				                return true
+				        }},
+				        accept:"application/zip,application/x-zip,application/x-zip-compressed,application/x-7z-compressed"
+				        }
+			},
+			messages: {
+				ClusterName: {required:"Please enter cluster name.",minlength:"Please enter atleast two character.",maxlength:"Cluster Name Is Too Long.",alphanumeric:"Cluster Name Must Contain Only Letters, Numbers Or Underscores"},
+				Source : {required:"Please select source"},
+				otherSource : {required:"Please enter source",alphanumeric:"Source must contain only letters, numbers or underscores."},
+				ClusterAssignedTo : {required:"Please select assignto"},
+				Priority : {required:"Please select priority"},
+				Type : {required:"Please select type"},
+				State : {required:"Please select state"},
+				Progress : {required:"Please select progress"},
+				myfile : {required:"Please upload zip file"}
+			}
+		});
+	});
+</script>
+
+
+<div class="row" xmlns="http://www.w3.org/1999/html">
+     <form id="clusterForm" name="clusterForm" action="/cluster/" method="post"  enctype="multipart/form-data" >
+       {% csrf_token %}
+          <div class="col-lg-6">
+                <div class="form-group">
+                <input type="hidden" name="ClusterId" class="form-control" id="ClusterId" value="{{data.clusterDetails.ClusterId}}">
+                <label for="ClusterName">Cluster Name<span class="required-field"> *</span></label>
+                <input type="text" name="ClusterName" class="form-control" id="ClusterName" value="{{data.clusterDetails.ClusterName}}" placeholder="Enter Cluster Name">
+              </div>
+
+              <div class="form-group">
+                <label for="ClusterNotes">Cluster Notes</label>
+                <textarea class="form-control" name="ClusterNotes" id="ClusterNotes" rows="3" placeholder="Enter Cluster Notes" >{{data.clusterDetails.ClusterNotes}}</textarea>
+              </div>
+
+              <div class="form-group">
+                    {{data.clusterTypeDropDown|safe}}
+
+               </div>
+
+              <div class="form-group">
+                <label for="nofile">Added Files</label>
+                    <div id="nofile"><span class="label label-default">No Cluster File Uploaded.</span></div><div id="fileTags"></div>
+              </div>
+
+              <script src="{% static 'portal/js/SimpleAjaxUploader.js' %}"></script>
+             <div class="content-box">
+                       <input type="button" id="upload-btn" class="btn btn-primary btn-large clearfix " value="Choose file">
+                        <div id="errormsg" class="clearfix redtext" ></div>
+                        <div id="progressBox" class="progress-wrap" ></div>
+                        <div class="clear-line" ></div>
+             </div>
+
+             <input type="hidden" name="cluster_file_ids" id="cluster_file_ids" value="{{data.ClusterFileIds}}" >
+             <button type="submit" class="btn btn-primary btn-outline">Submit</button> <a id="view_cluster" class="btn btn-primary btn-outline" href="/cluster/{{data.clusterDetails.ClusterId}}?action=view">View Cluster</a>
+             <p class="note"><em><span>Note : <strong class="required-field">*</strong> Indicates required field </span></em></p>
+           </div>
+
+            <div class="col-lg-6">
+               <div class="form-group">
+                   {{data.clusterSourceDropDown|safe}}
+                 <input type="text" class="form-control" name="otherSource" id="other_source" placeholder="Enter Other Cluster Source" disabled>
+               </div>
+               <div class="form-group">{{data.clusterAssigneeToDropDown|safe}} </div>
+              <div class="form-group">{{data.clusterPriorityDropDown|safe}}</div>
+              <div class="form-group">  {{data.clusterProgressDropDown|safe}}  </div>
+              <!--<div class="form-group"> {{data.clusterStateDropDown|safe}}  </div>-->
+              <div class="form-group">{{data.clusterDetails.drop_manager|safe}} </div>
+              <div class="form-group">{{data.clusterDetails.drop_reviewer|safe}} </div>
+              <div class="form-group">{{data.clusterDetails.drop_qa|safe}} </div>
+            </div>
+            {% if data.clusterFiles %}
+                    <script type="text/javascript">
+                        jQuery('#nofile .label').text('')
+                        clusterFileLength = "{{data.clusterFiles|length}}"
+                           {% for clusterFiles in data.clusterFiles%}
+                                    jQuery('#nofile').css('visiblity','true');
+                                    jQuery('#nofile .label').css('background-color','#5cb85c');
+                                    if(clusterFileLength == 1)
+                                    { jQuery('#nofile ').append('<span class="label label-success" > {{clusterFiles.1}} </span>&nbsp;');
+                            }else
+                            { jQuery('#nofile ').append('<span class="label label-success" > {{clusterFiles.1}} <a  onclick="confirmDelete({{clusterFiles.0}});" role="button"><span class="glyphicon glyphicon-remove-sign"  data-toggle="tooltip" data-placement="bottom" title="Remove File"></span></a></span>&nbsp;');}
+                         {% endfor %}
+                     </script>
+       {% endif %}
+    </form>
+</div>
+
+
+<script type="text/javascript">
+
+  var AddedFiles = 0;
+  var fileArray = [] ;
+  function removeFile(fileId){
+
+    myIndex = fileArray.indexOf(fileId);
+    if (myIndex !=(-1)){
+        fileArray.splice(myIndex,1);
+        jQuery("#cluster_file_ids").val(JSON.parse(JSON.stringify(fileArray)));
+        jQuery('#tag-'+fileId).remove();
+
+        if (fileArray.length == 0) jQuery("#nofile").show();
+    }
+
+    }
+  var btn = document.getElementById('upload-btn'),
+      wrap = document.getElementById('pic-progress-wrap'),
+      picBox = document.getElementById('picbox'),
+      errBox = document.getElementById('errormsg');
+
+  var uploader = new ss.SimpleUpload({
+        button: btn,
+        url: '/cluster/file/',
+        progressUrl: '/cluster/file/?type=progress',
+        name: 'myfile',
+        multiple: true,
+        multipart: true,
+        maxUploads: 10,
+        maxSize: 10211111111114,
+        queue: false,
+        debug: true,
+        hoverClass: 'btn-hover',
+        focusClass: 'active',
+        disabledClass: 'disabled',
+        responseType: 'json',
+        allowedExtensions : ['zip'],
+        onSubmit: function(filename, ext) {
+         errBox.innerHTML = '';
+         var progress = document.createElement('div'), // container for progress bar
+              bar = document.createElement('div'), // actual progress bar
+              fileSize = document.createElement('div'), // container for upload file size
+              wrapper = document.createElement('div'), // container for this progress bar
+              //declare somewhere: <div id="progressBox"></div> where you want to show the progress-bar(s)
+              progressBox = document.getElementById('progressBox'); //on page container for progress bars
+
+          // Assign each element its corresponding class
+          progress.className = 'progress progress-striped';
+          bar.className = 'progress-bar progress-bar-success';
+          fileSize.className = 'size';
+          wrapper.className = 'wrapper';
+
+          // Assemble the progress bar and add it to the page
+          progress.appendChild(bar);
+          wrapper.innerHTML = '<div class="name">'+filename+'</div>'; // filename is passed to onSubmit()
+          wrapper.appendChild(fileSize);
+          wrapper.appendChild(progress);
+          progressBox.appendChild(wrapper); // just an element on the page to hold the progress bars
+
+          // Assign roles to the elements of the progress bar
+          this.setProgressBar(bar); // will serve as the actual progress bar
+          this.setFileSizeBox(fileSize); // display file size beside progress bar
+          this.setProgressContainer(wrapper); // designate the containing div to be removed after upload
+          },
+          onSizeError: function() {
+                       errBox.innerHTML = '<div class="alert alert-danger" role="alert">  <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>  <span class="sr-only">Error:</span>  Files May Not Exceed 1024K.!</div>';
+                       jQuery('.alert-danger').delay(2000).fadeOut(1000)
+          },
+          onExtError: function() {
+
+                errBox.innerHTML = '<div class="alert alert-danger" role="alert">  <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>  <span class="sr-only">Error:</span>  Invalid File Type. Please Select .zip Extension File!</div>';
+                       jQuery('.alert-danger').delay(2000).fadeOut(1000)
+          },
+        onComplete: function(file, response, btn) {
+            if (!response) {
+              errBox.innerHTML = 'Unable to upload file';
+              errBox.innerHTML = '<div class="alert alert-danger" role="alert">  <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>  <span class="sr-only">Error:</span>Unable to upload file.!</div>';
+                       jQuery('.alert-danger').delay(2000).fadeOut(1000)
+            }
+            if (response.success === true) {
+               if (fileArray.length == 0)
+                 jQuery("#nofile").hide();
+
+               if('{{data.clusterFiles}}'.length > 2)
+               {
+                  jQuery("#nofile").show();
+               }
+
+               fileArray.push(response.response);
+               //jQuery("#cluster_file_ids").val(JSON.stringify(fileArray));
+               jQuery("#cluster_file_ids").val(JSON.parse(JSON.stringify(fileArray)));
+               jQuery("#fileTags").append('<span id="tag-'+response.response+'" class="label label-success">'+response.name+' <span  class="glyphicon glyphicon-remove-sign" onClick="removeFile('+response.response+');" ></span>  </span>');
+            } else {
+                errBox.innerHTML = '<div class="alert alert-danger" role="alert">  <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>  <span class="sr-only">Error:</span>  Error in uploading File(s)!</div>';
+                jQuery('.alert-danger').delay(2000).fadeOut(1000)
+            }
+         }
+	});
+</script>
+
+<script type="text/javascript">
+jQuery(document).ready(function()
+{
+ jQuery('#ClusterId').html("{{data.clusterDetails.ClusterId}}");
+  if(!'{{data.clusterDetails.ClusterId}}')
+  {
+     jQuery('#view_cluster').hide();
+  }
+  showOtherSource();
+
+});
+
+ function confirmDelete(fileId)
+  {
+    jQuery.colorbox({innerWidth:250,innerHeight:95,fixed: true,html:'<b><center></br>Confirm Delete Cluster File #'+fileId+'?</b></br></br><a class="btn btn-primary btn-outline" href="/cluster_file_delete/'+fileId+'/{{data.clusterDetails.ClusterId}}">Delete</a>&nbsp;&nbsp;<a class="btn btn-primary btn-outline" href="/cluster/{{data.clusterDetails.ClusterId}}">Cancel</a></center>', escKey:true,overlayClose:true,onLoad: function() {jQuery('#cboxClose').show();}});
+  }
+
+  function UpdateFile(fileId)
+  {
+    jQuery.colorbox({innerWidth:250,innerHeight:95,fixed: true,html:'<b><center></br>Confirm Update/Change Cluster File #'+fileId+'?</b></br></br><a class="btn btn-primary btn-outline" href="/cluster_file_update/'+fileId+'/{{data.clusterDetails.ClusterId}}">Update</a>&nbsp;&nbsp;<a class="btn btn-primary btn-outline" href="/cluster/{{data.clusterDetails.ClusterId}}">Cancel</a></center>', escKey:true,overlayClose:true,onLoad: function() {jQuery('#cboxClose').show();}});
+  }
+
+function showOtherSource()
+{
+  if( (jQuery('#Source').val() == "0" && "{{data.source}}" == "0") || jQuery('#Source').val() == "0" )
+  {
+    jQuery('#other_source').prop("disabled", false);
+        if ( !(jQuery("#source option[value='{{data.clusterDetails.otherSource}}']").length > 0) ) {
+             jQuery('#other_source').val("{{data.clusterDetails.otherSource}}");
+        }
+        else
+        {
+        jQuery('#Source').find('option[value="{{data.source}}"  ]').attr("selected",true);
+        }
+   }
+  else
+  {
+    jQuery('#other_source').val("");
+    jQuery('#other_source').prop("disabled", true);
+  }
+ }
+
+</script>
+
+{% endblock %}

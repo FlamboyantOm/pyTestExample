@@ -1,0 +1,31 @@
+Tuesday, September 20, 2016, 12:35:37.
+
+
+Scanning: D:\web\apex\data\ini\20160920_121223_307_20160920_123323_iquakru5hvnxggp09epi7cf3da9b5rqg\1.ini
+
+[307_20160920_123323_iquakru5hvnxggp09epi7cf3da9b5rqg]
+Skipped: Filter1.Field: Invalid filter field
+
+--------------------------------------------------------------------------
+
+Scan Complete
+
+Success: Sql Db file created/updated successfully
+
+--------------------------------------------------------------------------
+
+Scan Summary
+
+Total Files Scanned     = 1
+Total Records Found     = 1
+Total Records Added     = 0
+Total Duplicate Records = 0
+Total Records Updated   = 0
+Total Records Skipped   = 1
+
+Start Time    : 12:35:37 
+End Time      : 12:35:37 
+Total Time    : 00:00:00
+
+
+--------------------------------------------------------------------------

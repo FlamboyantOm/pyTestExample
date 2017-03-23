@@ -1,0 +1,283 @@
+{% extends "portal/base.html" %}
+{% block content %}
+{% load staticfiles %}
+<link href="{% static 'portal/css/dataTables.min.css' %}" rel="stylesheet">
+<script src="{% static 'portal/js/dataTables.min.js' %}"></script>
+<script src="{% static 'portal/js/chartjs/Chart.js' %}"></script>
+
+<!--<script  type="text/javascript">
+    // random color generator
+    var randomColorGenerator = function () {    return '#' + (Math.random().toString(16) + '0000000').slice(2, 8); };
+    // open url in new tab with focus
+    function openInNewTab(url) {   var win = window.open(url, '_blank');   win.focus(); }
+    // create chart for signature
+    function getPieChart(name,data,author=""){
+    var options = {     onAnimationComplete: function()  {  this.showTooltip(this.segments, true);     },     tooltipEvents: [],     showTooltips: true }
+    var context = document.getElementById(name).getContext('2d');
+    var skillsChart = new Chart(context).Pie(data,options);
+    $("#"+name).click(  function(evt){    var activePoints = skillsChart.getSegmentsAtEvent(evt);  var url = "/signature/list/?State=" + activePoints[0].label + "&AuthorName="+author;  openInNewTab(url);  return;} );
+
+    var chartTbl = "<table class=\" table-bordered table \"><tr><th colspan=6>State Table</th></tr><tr>"
+    for (var i = 0; i < pieData.length; i++ ){
+        chartTbl = chartTbl + "<td style=\"color:"+pieData[i].color+ "\">"+pieData[i].label+" : "+pieData[i].value+ "</td>"
+        if (!((i+1) % 6) ){
+            &lt;!&ndash;chartTbl = chartTbl + i+"</tr><tr>"&ndash;&gt;
+            chartTbl = chartTbl + "</tr><tr>"
+        }
+    }
+    chartTbl = chartTbl + "</tr><table>"
+
+    jQuery("#"+name).after(chartTbl );
+
+    }
+
+</script>-->
+
+<div class="row">
+<div class="col-lg-12"> {% if data.cluster or data.clusterAssign  %}
+  <!-- 9 columns start -->
+  <div class="{% if data.clusterRecentActivities or data.signatureRecentActivities %}col-lg-9 {% else %}col-lg-12 nopadding{% endif %}">
+    <!-- ------------------ Cluster Uploaded functionality starts ---------------->
+  <!--     {% if data.hasStateVal %}
+    <div class="col-lg-12" id="stateDetails">
+         <h2>Signature Added by {{data.userId}}</h2>
+        <div class="row statePriorityRecord col-sm-8">
+          <canvas id="signaturePieChart2"  style="width:100%;"></canvas>
+            <div id="signaturePieChartLegend"></div>
+<script>
+var pieData = [ {% for key,val in data.statecreateUserDict %}   { value: {{val}},  label: '{{key}}',   color:randomColorGenerator()   },  {% endfor %} ];
+getPieChart("signaturePieChart2",pieData,"{{data.userId}}");
+</script>
+
+ </div>
+
+        &lt;!&ndash; <h4>Signature State Table</h4>
+          <div class="row statePriorityRecord col-sm-4">
+            <table class="table-striped table-bordered table-hover table ">
+              {% for key,val in data.statecreateUserDict %}
+              <tr>
+                <td> {{key}} </td>
+                <td> <a href="/signature/list/?State={{key}}&AuthorName={{data.userId}}" role="button" >{{val}}</a></td>
+                </tr>
+                {% endfor %}
+            </table>
+          </div>&ndash;&gt;
+      </div>
+    {% endif %}-->
+
+    {% if data.cluster %}
+    <div class="col-lg-12">
+      <h2>Cluster Uploaded by {{data.userId}}</h2>
+<!--      {% if data.prioritycreateUserDict %}
+      <div class="row col-lg-12">
+
+        <div class="row statePriorityRecord col-sm-4">
+          <h4>Priority Table</h4>
+          <table class="table ">
+            {% for key,val in data.prioritycreateUserDict %}
+            {% if forloop.counter|divisibleby:1 %} {% else %}
+            <tr>{% endif %}
+              <td> P{{key}} </td>
+              <td>{% if val != 0 %} <a href="/cluster/list/?Priority={{key}}&defaultuser=CreatedBy&CreatedBy={{data.userId}}"  role="button" >{{val}}</a> {% else %} {{val}} {% endif  %}</td>
+              {% if forloop.counter|divisibleby:5 %}
+            </tr>
+            {% else %} {% endif %}
+            {% endfor %}
+          </table>
+        </div>
+      </div>
+      {% endif %}-->
+
+      <div id="buildListClusterDiv">
+        <table id="buildListCluster" class="display shadow-in" cellspacing="0" width="100%">
+          <thead>
+            <tr>
+              <th>CID</th>
+              <th>Cluster Name</th>
+              <th>Created</th>
+              <th>Assign</th>
+              <th>Source</th>
+              <th>Priority</th>
+              <th>View</th>
+            </tr>
+          </thead>
+          <tfoot>
+            <tr>
+              <th>CID</th>
+              <th>Cluster Name</th>
+              <th>Created</th>
+              <th>Assign</th>
+              <th>Source</th>
+              <th>Priority</th>
+              <th>View</th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <script type="text/javascript">
+
+
+tableCluster = jQuery('#buildListCluster').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "order": [[0, "desc"], [1, ""], [2, ""], [3, ""], [4, ""], [5, ""],[6,""]],
+            "ajax": {"url": "/user/cluster/list/ajax/?default=CreatedBy&CreatedBy={{data.userId}}"},
+            "language": { "processing": "<div class='processing'> Processing ...</div>" },
+             "columnDefs": [
+                      { "width": "5%", "targets": [0,2,3,5,6] },
+                      { "width": "25%", "targets": [1] },
+                      { "width": "13%", "targets": [4] },
+                     {  "targets": 0,"sClass": "text-center" },
+                     {  "targets": 6,"sClass": "text-right","bSortable": false },
+                     { "targets": [2 ], "visible": false},
+
+                      ],
+             "autoWidth": false,
+            "columns": [{"data": "ClusterID"}, {"data": "ClusterName" },{"data": "CreatedBy"}, {"data": "ClusterAssignedTo" }, {"data": "Source"},{"data":"Priority"}, { "data": "View"}],
+
+             "fnDrawCallback": function (resp) {
+
+                                        if(resp._iRecordsTotal== 0)
+                                        {
+                                            jQuery('#buildListClusterDiv').hide();
+                                        }
+                        },
+            });
+
+        jQuery('#buildListCluster_filter').html('');
+        cnt = 1;
+        jQuery('#buildListCluster tfoot th').each(function() {
+            var title = jQuery(this).text();
+            arr = [0, 1, 2, 3,4, 5,6];
+            if(jQuery.inArray(cnt, arr) != -1)
+                jQuery(this).html('<input id="searchC_' + title + '" type="text" placeholder="' + title + '" />');
+            cnt++;
+        });
+        tableCluster.columns().every(function() {
+            var that = this;
+            jQuery('input', this.footer()).on('keyup change', function() {
+                if(that.search() !== this.value) {
+                    that.search(this.value).draw();
+                }
+            });
+        });
+
+ </script>
+    </div>
+    {% endif %}
+    <!-- ------------------ Cluster Uploaded functionality ends ---------------->
+    <!-- ------------------ Cluster Assign functionality starts ---------------->
+    {% if data.clusterAssign %}
+    <div id="buildListAssignDiv" class="row col-lg-12">
+      <h2>Cluster Assigned to {{data.userId}}</h2>
+<!--{% if data.priorityAssignUserDict %}
+      <div class="row col-lg-12">
+        <div class="row statePriorityRecord col-sm-4">
+          <h4>Priority Table</h4>
+          <table class="table ">
+            {% for key,val in data.priorityAssignUserDict %}
+            {% if forloop.counter|divisibleby:1 %} {% else %}
+            <tr>{% endif %}
+              <td> P{{key}} </td>
+              <td>{% if val != 0 %} <a href="/cluster/list/?Priority={{key}}&defaultuser=ClusterAssignedTo&ClusterAssignedTo={{data.userId}}" role="button" > {{val}}</a> {% else %} {{val}} {% endif %}  </td>
+              {% if forloop.counter|divisibleby:5 %}</tr>
+            {% else %} {% endif %}
+            {% endfor %}
+          </table>
+        </div>
+      </div>{% endif %}-->
+
+      <table id="buildListAssign" class="display shadow-in " cellspacing="0" width="100%">
+        <thead>
+          <tr>
+            <th>CID</th>
+            <th>Cluster Name</th>
+             <th>Assign </th>
+            <th>Created</th>
+            <th>Source</th>
+            <th>Priority</th>
+            <th>View</th>
+          </tr>
+        </thead>
+        <tfoot>
+          <tr>
+            <th>CID</th>
+            <th>Cluster Name</th>
+             <th>Assign</th>
+            <th>Created</th>
+            <th>Source</th>
+            <th>Priority</th>
+            <th>View</th>
+          </tr>
+        </tfoot>
+      </table>
+      <script type="text/javascript">
+<!--createChart("chartdivUploaded",[{% for key,val in stateAssignUserDict %}{"stage": "{{key}}", "count_cluster": {{val}}},{% endfor %}]);-->
+ tableSignature = jQuery('#buildListAssign').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "order": [[0, "desc"], [1, ""], [2, ""], [3, ""], [4, ""], [5, ""],[6,""]],
+            "ajax": {"url": "/user/cluster/list/ajax/?default=ClusterAssignedTo&ClusterAssignedTo={{data.userId}}"},
+            "language": { "processing": "<div class='processing'> Processing ...</div>" },
+             "columnDefs": [
+                      { "width": "5%", "targets": [0,3,5,6] },
+                      { "width": "25%", "targets": [1] },
+                      { "width": "13%", "targets": [4] },
+                        {  "targets": 0,"sClass": "text-center" },
+                        {  "targets": 6,"sClass": "text-right" ,"bSortable": false},
+                       { "targets": [2], "visible": false},
+                           ],
+             "autoWidth": false,
+            "columns": [{"data": "ClusterID"}, {"data": "ClusterName" }, {"data": "ClusterAssignedTo" }, {"data": "CreatedBy"},{"data": "Source"},{"data":"Priority"}, { "data": "View"}],
+
+            "fnDrawCallback": function (resp) {
+                                        if(resp._iRecordsTotal == 0)
+                                        {jQuery('#buildListAssignDiv').hide();}
+                        },
+
+                    });
+        jQuery('#buildListAssign_filter').html('');
+        cnt = 1;
+
+        jQuery('#buildListAssign tfoot th').each(function() {
+            var title = jQuery(this).text();
+            arr = [0,1,2,3,4,5,6];
+            if(jQuery.inArray(cnt, arr) != -1)
+            jQuery(this).html('<input id="searchS_' + title + '" type="text" placeholder="' + title + '" />');
+            cnt++;
+        });
+        tableSignature.columns().every(function() {
+            var that = this;
+            jQuery('input', this.footer()).on('keyup change', function() {
+                if(that.search() !== this.value) {
+                    that.search(this.value).draw();
+                }
+            });
+        });
+       // loadDefault(tableSignature,3, '{{data.userId}}');
+
+	</script>
+    </div>
+    {% endif %}
+    <!-- ------------------ Cluster Assign functionality starts ---------------->
+  </div>
+
+  <!-- 3 columns if there is rencent activities -->
+  {% if data.clusterRecentActivities or data.signatureRecentActivities %}
+  <div class="col-lg-3"> {% if data.clusterRecentActivities %}
+    <div class="sidebar-left" > {{data.clusterRecentActivities|safe}} </div>
+    {% endif %}
+    {% if data.signatureRecentActivities %}
+    <div class="sidebar-left" > {{data.signatureRecentActivities|safe}} </div>
+    {% endif %} </div>
+  {% else %}
+
+
+  {% endif %}
+
+  {% else %}
+    <span class=" alert-info" ><h3><strong>No data available!</strong></h3></span>
+  {% endif %}
+  {{ else }}
+</div></div>
+{% endblock %}

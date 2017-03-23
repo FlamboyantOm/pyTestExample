@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+
+
+{% url 'addnum' as addnumm %}
+{{ addnumm }}
+
+<script src = "https://code.jquery.com/jquery-git.js"></script>
+
+
+<body>
+
+<form name="form" method="POST" >
+    {% csrf_token %}
+
+    <br>
+    Num1:<input type="text" id='num1' name="num1" /><br>
+    Num2:<input type="text" id='num2' name="num2" /><br>
+
+    <input type="submit" id="submit" value="Add" onclick="add1();"  /> <br><br>
+<p id="p1"> </p>
+</form>
+<script>
+var sum='';
+function add() {
+
+    console.log("In add")
+    jQuery.ajax({
+
+        url: '{{addnumm}}',
+
+        type: "POST",
+
+          data: {
+
+            csrfmiddlewaretoken: '{{ csrf_token }}',
+            'num1':jQuery('#num1').val(),
+            'num2':jQuery('#num2').val(),
+             },
+
+        success: function (data)
+        {
+            console.log(data);
+            jQuery('#p1').append(data)
+            sum = data;
+        },
+
+    });
+}
+
+    function add1() {
+         add();
+alert()
+    }
+</script>
+</body>
+</html>
+
+
+{# Number1 : <p id="num1">{{ form.Number1 }}</p> <br>#}
+{##}
+{#Number2 : <p id="num2"> {{ form.Number2 }} </p> <br>#}

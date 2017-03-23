@@ -1,0 +1,64 @@
+#-------------------------------------------------------------------------------
+# Name:        module1
+# Purpose:
+#
+# Author:      AnkurM
+#
+# Created:     18-12-2015
+# Copyright:   (c) AnkurM 2015
+# Licence:     <your licence>
+#-------------------------------------------------------------------------------
+
+#constants
+COVERAGE_THRESHOLD = 1
+
+#Table Names - Apex Base
+MALWARE_INFO="malwares"
+CLEAN_INFO="cleanfiles"
+FALSESIG="flase_sig"
+
+#Table Names - Apex Signature
+SIG_TYPE_INFO="chsum_sigtype"
+SIG_MASTER_INFO="sig_master"
+GROUP_SIG_INFO="chsum_sigs"
+CFC2_SIG_INFO="cfc2_sigs"
+E2_SIG_INFO="e2_sig_status"
+QH_SIG_INFO="qh_sig_status"
+MALWARE_NAME_INFO="malwarenames"
+METAINX_INFO="chsum_inx_meta"
+SIGREC_TYPE_INFO="sig_rec_type_meta"
+SILENT_DET_INFO="silentdetections"
+PATCH_MASTER_INFO="patch_master"
+PATCH_DETAILS_INFO="patch_details"
+
+STATUS_ADDED=1
+STATUS_COVERED=2
+STATUS_SIGGEN=3
+STATUS_PENDING=4
+GEN_COVERED=5
+WEAK_SIG=6
+LESS_HIT_COUNT=7
+FALSE_SIG=8
+
+
+# module_name
+SIG_GEN=1
+SIG_REVERIFY=2
+SIG_RECREATE=3
+SIG_EXLUDE=4
+
+FILE_BUCKET_UPPER=10
+FILE_BUCKET_MIDU=10
+FILE_BUCKET_MIDL=3
+FILE_BUCKET_FIXED_2=2
+FILE_BUCKET_FIXED_1=1
+FILE_BUCKET_MAX_FIXED_SIZE=5000
+
+MAX_MALWARE_NAME_LEN=30
+RECORD_SIZE=19
+MAX_INX_SIZE=30*1024*1024
+CHSUMSIGINFOFIELDS = "SIG_TYPE_FK,MAL_NAME_INDEX_FK,RESERVE_FLAG"
+CHSUMQHSIGINFOFIELDS = "SIG_ID_FK,SIG_TYPE_FK,MARK_DELETED,DELETE_REASON,UPDATE_FLAG,UPDATE_FLAG_EXCLUDE,DETECTION_COUNT"
+CHSUME2SIGINFOFIELDS = "SIG_ID_FK,SIG_TYPE_FK,MARK_DELETED,DELETE_REASON,UPDATE_FLAG,UPDATE_FLAG_EXCLUDE,DETECTION_COUNT"
+
+

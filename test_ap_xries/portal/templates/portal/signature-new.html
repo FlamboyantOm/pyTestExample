@@ -1,0 +1,1749 @@
+{% extends "portal/base.html" %}
+{% block content %}
+{% load staticfiles %}
+
+<script src="{% static 'portal/js/jquery.validate.min.js' %}"></script>
+<script src="{% static 'portal/js/additional-methods.min.js' %}"></script>
+<script src="{% static 'portal/js/bootstrap-tagsinput.js' %}"></script>
+<script src="{% static 'portal/js/bootstrap3-typeahead.min.js' %}"></script>
+<link href="{% static 'portal/css/bootstrap-tagsinput.css' %}" rel="stylesheet">
+<script src="{% static 'portal/js/bootstrap-checkbox.min.js' %}"></script>
+
+<script type="text/javascript">
+	jQuery().ready(function() {
+       jQuery.validator.addMethod("ScanRuleValidation", function() {
+	               return getSignatureData();
+        }, "Invalid Scan Rule.");
+
+        jQuery.validator.addMethod("alphanumeric", function(value, element) {
+        return this.optional(element) || /^[a-z0-9.\_\s\-]+$/i.test(value);
+    }, "Must contain only letters,numbers,full-stop,hyphen or underscore.");
+
+     jQuery.validator.addMethod("threatnamevalidation", function(value, element) {
+        return this.optional(element) || /^[a-z0-9.\_\s\-\:\/\(\)]+$/i.test(value);
+    }, "Must contain only letters,numbers,full-stop,hyphen or underscore.");
+
+		jQuery("#signatureForm").validate({
+            ignore: "hidden",
+			rules: {
+				ClusterId : {required:true},
+				SignatureData : {required:true},
+				ThreatName : {required:true,minlength:2,maxlength:80,threatnamevalidation:true},
+				FileType : {required:true},
+				ScanRule : {ScanRuleValidation:true},
+				ScanRuleSusp : {ScanRuleValidation:true},
+                RecordComment:{minlength:1,maxlength:256,alphanumeric:true},
+                PolyFunIndex:{minlength:1,maxlength:10},
+			},
+			messages: {
+				ClusterId: {required:"Please select cluster id."},
+				SignatureData: {required:"Please add signature pattern."},
+				ThreatName : {required:"Please enter threat name"},
+    			FileType : {required:"Please select file type"},
+    			RecordComment:{required:"Invalid comment length"},
+
+			},
+		highlight: function(element) {
+            jQuery(element).closest('.form-group').addClass('has-error');
+        },
+        unhighlight: function(element) {
+            jQuery(element).closest('.form-group').removeClass('has-error');
+        },
+        errorElement: 'span',
+        errorClass: 'help-block',
+        errorPlacement: function(error, element) {
+            if(element.parent('.input-group').length) {
+                error.insertAfter(element.parent());
+            } else {
+                error.insertAfter(element);
+            }
+        },
+		});
+	});
+
+
+
+</script>
+
+<!-- on ready function -->
+<script type="text/javascript">
+
+jQuery(document).ready(function()
+{
+   jQuery('#sigStatus').checkboxpicker();
+   jQuery('#WeakDetection').checkboxpicker();
+   jQuery('#WeakSig').checkboxpicker();
+   jQuery('#ScanRuleSequence').checkboxpicker();
+
+   jQuery('.patternError').hide();
+   jQuery('.patternFilterError').hide();
+
+   if(jQuery("#tableData tbody tr").length > 1){
+         jQuery(".tableData .deleteMul").show();
+         jQuery(".ScanRuleDiv").removeClass('hidden');
+         jQuery(".ScanRuleSuspDiv").removeClass('hidden');
+
+         showScanSequence('ScanRule');
+
+              {% if 'SCAN_RULE_SUSP' in data.ClusterFieldAllowed %}
+                      showScanSequence('ScanRuleSusp');
+              {% endif %}
+
+        }else{
+          jQuery("#tableData tbody th").hide();
+          jQuery(".tableData .deleteMul").hide();
+       }
+
+	if(jQuery("#filterTableData tbody tr").length > 1){
+		 jQuery(".filterTableData .deleteMul").show();
+        }else{
+          jQuery("#filterTableData tbody th").hide();
+          jQuery(".filterTableData .deleteMul").hide();
+       }
+
+    if(jQuery("#tableData tbody tr").length > 26)
+    {
+     jQuery(".sig-modal-btn #patternmodalbtn").attr('disabled','disabled');
+    }
+
+    {% if data.filterRecord %}
+        jQuery("#filterTableData").show();
+    {% else %}
+        jQuery("#filterTableData").hide();
+    {% endif %}
+
+    <!-- no space allowed if normalised -->
+                if({{data.signatureType.normalised}}  == "1" )
+                {
+                  jQuery(function() {
+                 jQuery('#patternInput').on('keypress', function(e) {
+                    if (e.which == 32)
+                        return false;
+                      });
+                });
+                }
+
+           <!--avoid submit form on enter -->
+              jQuery("#signatureForm").on('keyup keypress', function(e) {
+              var keyCode = e.keyCode || e.which;
+              if (keyCode === 13) {
+                e.preventDefault();
+                return false;
+              }
+            });
+
+<!-- tag -->
+          jQuery("#tagsinput").tagsinput({
+                typeahead: {
+                    source: {{data.signatureTag|safe}},
+                    afterSelect: function(val) { this.$element.val(""); },
+                },
+                allowDuplicates: false,
+                tagClass: 'label label-primary',
+                maxChars: 50,
+                trimValue:true,
+                itemText: function(item) {
+                                          return this.itemValue(item.toLowerCase());
+                                         },
+
+             });
+
+        jQuery('#tagsinput').on('beforeItemAdd', function(event) {
+                  var tag = event.item;
+                  pat = /[0-9a-zA-Z_]/g;
+                  tag = tag.match(pat);
+                  jQuery('.sigTag .tag-error').hide();
+                 if(tag)
+                 {
+                   if((tag.join("").length != event.item.length ))
+                  {
+                      jQuery('.sigTag .tag-error').html('Invalid tag input');
+                     jQuery('.sigTag .tag-error').show();
+                      event.cancel = true;
+                   }
+                }
+                else
+                {
+                    jQuery('.sigTag  .tag-error').html('Invalid tag input');
+                  jQuery('.sigTag .tag-error').show();
+                    event.cancel = true;
+                }
+        });
+<!-- end tag-->
+
+
+
+
+<!-- show token on CUT -->
+jQuery('#CleanUpType').change(function(){
+    if(jQuery(this).val() == 2 || jQuery(this).val()  == 3)
+    {
+       jQuery(".startEndToken").removeClass('hidden');}
+    else
+    { jQuery(".startEndToken").addClass('hidden'); }
+  });
+
+
+}); //end on ready
+</script>
+
+<!-- for filter -->
+<script type="text/javascript">
+
+	function getFilterModalData()
+	{
+		var dataType = "";
+		var pattern= "";
+		FilterFieldInput = jQuery('#FilterFieldInput').val();
+		FilterField = jQuery('#FilterField').val();
+		<!--FilterOperation = jQuery('#FilterOperation').val();-->
+		FilterOperation= jQuery('#FilterOperation option:selected').text();
+
+		if(FilterFieldInput == ""){
+				patternFilterError("Filter fields value can not be blank");
+				return 0;
+		 }else if(!FilterFieldInput.match(/^\d+$/)){
+		 patternFilterError("Please enter only interger (0-9) value ");
+				return 0;
+		 }else if(FilterFieldInput.length > 512)
+		 {
+		    patternFilterError("Invalid filter value length");
+				return 0;
+		 }
+
+		if(FilterField == ""){
+				patternFilterError("Filter fields can not be blank");
+				return 0;
+		 }
+		if(FilterOperation == "" ||  jQuery('#FilterOperation').val() == ""){
+				patternFilterError("Filter operation can not be blank");
+				return 0;
+		 }
+
+		  checkFilterData = getFilterTableColumnValues(FilterField,FilterOperation,FilterFieldInput);
+          if(!(checkFilterData))
+          {
+              patternFilterError("Filter already available");
+              return 0;
+          }
+
+		<!-- add Filter pattern to table -- >
+		jQuery('#filterTableData').show();
+
+		if( FilterFieldInput ){
+		 row = jQuery("#filterTableData tbody tr").length;
+		<!--if(row > 24){ patternFilterError("Filter value can have max 24 pattern"); return 0; } -->
+		len = row;
+		jQuery('#filterTableData').append('<tr class="child" id="'+len+'" class="col-lg-12"  title="View Filter Details"  >'
+			+'<td id="rowIndex['+len+']" class="col-lg-1">'+row+'</td>'
+			+'<td id="FilterField['+len+']" class="col-lg-4"  title="View Filter Details" data-toggle="modal" data-target="#filterDetails" role="button" onclick="getFilterPatternDetails('+len+');">'+FilterField+'</td>'
+			+'<td id="FilterOperation['+len+']" class="col-lg-4"   title="View Filter Details" data-toggle="modal" data-target="#filterDetails" role="button" onclick="getFilterPatternDetails('+len+');">'+FilterOperation+'</td>'
+			+'<td id="FilterFieldInput['+len+']" class="col-lg-4"   title="View Filter Details" data-toggle="modal" data-target="#filterDetails" role="button" onclick="getFilterPatternDetails('+len+');">'+FilterFieldInput+'</td>'
+			+'<td><a id="'+len+'" role="button" data-toggle="tooltip" data-placement="bottom" title="Remove Pattern" onclick="removeRow(this.id,\'filterTableData\');" ><span class="glyphicon glyphicon-trash" ></span></a></td>'
+			+'<td class="col-lg-1"><input type="checkbox" name="deletefilterTableData" id="'+len+'" role="button" /></td>'
+			+'<td class="col-lg-1"><span id="type['+len+']" hidden="hidden">'+dataType+'</span>'
+			+'<input type="text" name="FilterFieldInput['+len+']"  hidden="hidden" id="FilterFieldInput['+len+']" value="'+FilterFieldInput+'"/>'
+			+'<input type="text" name="FilterField['+len+']" id="FilterField['+len+']" value="'+FilterField+'" hidden="hidden"/>'
+			+'<input type="text" name="FilterOperation['+len+']" id="FilterOperation['+len+']" value="'+FilterOperation+'" hidden="hidden"/>'
+			+'</td></tr>');
+		jQuery('#inputData').val("");
+		}else{
+			 jQuery('.patternFilterError').html('<span class="error" ><b>Please enter filter details</b></span>');
+			 jQuery('.patternFilterError').show();
+			 jQuery('.patternFilterError .error').delay(2000).fadeOut(2000);
+		}
+		if(jQuery("#filterTableData tbody tr").length > 1){
+		 jQuery(".filterTableData .deleteMul").show();
+		 jQuery("#filterTableData").show();
+		}
+
+		jQuery("#sigFilterModal .close").click();
+	}
+
+
+function getFilterPatternDetails(id){
+    modal();
+    <!--jQuery('#filterDetails .modal-title b').text("Fillter Details For " + document.getElementById("rowIndex["+id+"]").innerHTML);-->
+    jQuery('#filterDetails .modal-title b').text("Fillter Details For " + jQuery('.filterTableData #'+id+' td:nth-child(1)').text());
+    jQuery('#filterDetails #FilterFieldInput').text(document.getElementById("FilterFieldInput["+id+"]").innerHTML);
+    jQuery('#filterDetails #FilterField').text(document.getElementById("FilterField["+id+"]").innerHTML);
+    jQuery('#filterDetails #FilterOperation').text(document.getElementById("FilterOperation["+id+"]").innerHTML);
+}
+
+<!-- check filter data already available -->
+function getFilterTableColumnValues(FilterField,FilterOperation,FilterFieldInput)
+{
+    var table=document.getElementById('filterTableData');
+     for(var i=1;i<jQuery("#filterTableData tbody tr").length;i++){
+       if((FilterField.toUpperCase() == table.rows[i].cells[1].innerHTML) && (FilterOperation == table.rows[i].cells[2].innerText) && (FilterFieldInput == table.rows[i].cells[3].innerHTML) )
+           {
+              return 0;
+            }
+
+      }
+ return 1;
+}
+
+
+function patternFilterError(errMsg,btn1="Back",btn2="Cancel")
+{
+     jQuery('.modal-body .patternFilterError').html('<span class="error"><b>'+errMsg+'</b></span>');
+     jQuery('.modal-body .patternFilterError').show();
+     jQuery('.modal-footer #btn1').text(btn1)
+     procesPopup(3);
+    }
+</script>
+
+<!-- for pattern -->
+<script type="text/javascript">
+
+function showScanSequence(id)
+     {
+        if(jQuery('#ScanRule').length || jQuery('#ScanRuleSusp').length)
+        {
+                if(jQuery('#ScanRule').val().trim().length)
+                {
+                  jQuery('.ScanRuleSequenceDiv').removeClass('hidden');
+                  jQuery('#'+id).val(jQuery('#'+id).val().toUpperCase());
+                }
+
+              {% if 'SCAN_RULE_SUSP' in data.ClusterFieldAllowed %}
+                if(jQuery('#ScanRuleSusp').val().trim().length!= '0')
+                {
+                            if(jQuery('#ScanRuleSusp').val().trim().length)
+                            {
+                                  jQuery('.ScanRuleSequenceDiv').removeClass('hidden');
+                                  jQuery('#'+id).val(jQuery('#'+id).val().toUpperCase());
+                            }
+                }
+                {% endif %}
+                else
+                {
+                     {% if 'SCAN_RULE_SUSP' in data.ClusterFieldAllowed %}
+                              if(jQuery('#ScanRule').val().length || jQuery('#ScanRuleSusp').val().trim().length != 0)
+                     {% else %}
+                      if(jQuery('#ScanRule').val().length )
+
+                        {% endif %}
+                   {    jQuery('.ScanRuleSequenceDiv').removeClass('hidden');}
+                  else
+                  {   jQuery('.ScanRuleSequenceDiv').addClass('hidden'); }
+                }
+        }
+         else  {   jQuery('.ScanRuleSequenceDiv').addClass('hidden'); }
+}
+
+function SignatureData(value,id)
+    {
+       if(value)
+        {
+        oldVal = jQuery('#'+id).val();
+        if(jQuery('#'+id).val().trim().length == 0 )
+        {
+        jQuery('#'+id).val(value);
+        }
+        else
+        {
+        jQuery('#'+id).val(oldVal +","+value);
+        }}
+}
+
+function getCheckAll(id,TableName){
+	jQuery('#'+id).change(function () {
+		jQuery('input[id][name$='+TableName+']:checkbox ').prop('checked', this.checked);
+	});
+}
+
+function getPatternDetails(id){
+    modal();
+    jQuery('#patternDetails .modal-title b').text("Pattern Details For " +document.getElementById("rowIndex["+id+"]").innerHTML);
+    jQuery('#patternDetails #pattern').text(document.getElementById("data["+id+"]").innerHTML);
+    jQuery('#patternDetails #ascii').text(document.getElementById("ascii["+id+"]").innerHTML);
+
+      {% if 'CLEANUP_TYPE' in data.ClusterFieldAllowed  %}
+          jQuery('#patternDetails #cleanuptype').text(document.getElementById("cleanUpType["+id+"]").value);
+        if(document.getElementById("PatternStartToken["+id+"]").value != "NULL" & document.getElementById("PatternStartToken["+id+"]").value != "")
+         {
+          jQuery('#patternDetails .patternDetailsStartToken').show();
+          jQuery('#patternDetails .patternDetailsEndToken').show();
+          jQuery('#patternDetails #start_token').text(document.getElementById("PatternStartToken["+id+"]").value);
+          jQuery('#patternDetails #end_token').text(document.getElementById("PatternEndToken["+id+"]").value); }else
+          {  jQuery('#patternDetails .patternDetailsStartToken').hide(); jQuery('#patternDetails .patternDetailsEndToken').hide();}
+    {% endif %}
+
+    if(document.getElementById("PatternComment["+id+"]").value)
+    { jQuery('#patternDetails #comment').text(document.getElementById("PatternComment["+id+"]").value);}
+    else
+    {
+    jQuery('#patternDetails #comment').text('-');
+    }
+
+    {% if 'LOCATION_ID' in data.ClusterFieldAllowed  %}
+    if(document.getElementById("LocationId["+id+"]").value.length)
+             {jQuery('#patternDetails #siglocationId').text(document.getElementById("LocationId["+id+"]").value);}
+            else{jQuery('#patternDetails #siglocationId').text('-');}
+
+    {% endif %}
+
+   {% if 'OFFSET' in data.ClusterFieldAllowed %}
+    jQuery('#patternDetails #sigoffset').text(document.getElementById("Offset["+id+"]").value);
+    {% endif %}
+
+     {% if 'BUFFER' in data.ClusterFieldAllowed %}
+    jQuery('#patternDetails #sigbufferSize').text(document.getElementById("BufferSize["+id+"]").value);
+    {% endif %}
+
+     jQuery('#patternDetails #sigDistance').text(document.getElementById("Distance["+id+"]").value);
+
+      {% if 'WEAK_SIG' in data.ClusterFieldAllowed  %}
+      if(document.getElementById("PatternWeakSig["+id+"]").value == 0)
+      {    jQuery('#patternDetails #sigweakSig').text('Disabled');}
+      else{ jQuery('#patternDetails #sigweakSig').text('Enabled');}
+   {% endif %}
+}
+
+<!--delete pattern row-->
+function removeRow(rowId,TableName){
+var i = 64;
+deleteId = rowId;
+var j=0;
+var k=0;
+if(rowId == ''){
+jQuery.colorbox({innerWidth:200,innerHeight:40,fixed: true,html:'</br><center><span class="glyphicon glyphicon-exclamation-sign" ></span><b> No Record Selected</b></center>', escKey:true,overlayClose:true,onLoad: function() {jQuery('#cboxClose').show();}});
+}else{
+ if(confirm('Do you want to delete selected record?')){
+
+      res =  jQuery('#'+TableName+' #'+rowId).remove();
+        if(res)
+        {
+         if(TableName == 'tableData'){
+               jQuery('#ScanRule').val('');
+                jQuery('#ScanRuleSusp').val('');}
+        }
+       jQuery('#'+TableName+' tr').each(function(){
+			if(TableName == 'tableData'){
+			jQuery(this).find("td:first").text(String.fromCharCode(i));
+			i += 1;
+			}else{
+            jQuery(this).find("td:first").text(k);
+			k += 1;
+			}
+      });
+    }
+
+ }
+ if(k == 1){
+	jQuery("#filterTableData").hide();
+	jQuery("."+TableName+" .deleteMul").hide();
+	}
+ getSignaturePatternOnAdd();
+}
+
+
+<!--delete multiple records -->
+function deleteMultipleRow(TableName){
+       var checked = jQuery('input[id][name$='+TableName+']:checkbox:checked').map(function () {
+           return this.value;
+       }).get();
+
+    if(checked.length == 0)
+    {
+    jQuery.colorbox({innerWidth:200,innerHeight:40,fixed: true,html:'</br><center><span class="glyphicon glyphicon-exclamation-sign" ></span><b>No record selected</b></center>', escKey:true,overlayClose:true,onLoad: function() {jQuery('#cboxClose').show();}});
+    return 0;
+    }
+
+    if(confirm('Do you want to delete selected records?')){
+
+       var removed = jQuery('input[id][name$='+TableName+']:checkbox:checked').parents("tr").remove();
+       if(removed)
+       {
+       if(TableName == 'tableData'){
+       jQuery('#ScanRule').val('');
+                   jQuery('#ScanRuleSusp').val('');}
+       }
+       var remained = jQuery('input[id][name$='+TableName+']:checkbox:unchecked').parents("tr").size();
+       if(remained == 0){
+           jQuery('.DeleteMul'+TableName+'').hide();
+           jQuery('#'+TableName+'').hide();
+
+           jQuery("."+TableName+" .deleteMul").hide();
+               jQuery(".ScanRuleSuspDiv").hide();
+               jQuery(".ScanRuleDiv").hide();
+       }
+
+       var i= 64;
+       var k= 0;
+       jQuery('#'+TableName+' tr').each(function(){
+               if(TableName == 'tableData'){
+               jQuery(this).find("td:first").text(String.fromCharCode(i));
+               i += 1;
+               }else{
+               jQuery(this).find("td:first").text(k);
+               k += 1;
+               }
+         });
+
+         getSignaturePatternOnAdd();
+         }
+
+}
+
+
+<!-- scan rule validation -->
+function scanRuleValidation(sigkeyArr,id)
+{
+if(jQuery('#'+id).val())
+{
+scanRuleData = jQuery('#'+id).val().toUpperCase();
+
+for(var i=0;i<scanRuleData.length;i++)
+{
+   if(scanRuleData[i] == scanRuleData[i+1])
+   {
+      return 0;
+    }
+}
+}
+scanRuleArr = scanRuleData.split('|');
+scanRuleArr = scanRuleArr.sort();
+scanruleError = '';
+newscanRuleArr = []
+scanRuleArr = scanRuleArr.sort();
+
+    for(var i=0;i<scanRuleArr.length;i++)
+    {
+         if(scanRuleArr[i] != scanRuleArr[i+1])
+           {
+             newscanRuleArr.push(scanRuleArr[i].split(""))
+           }
+          else
+          {
+            return 0;
+          }
+
+    }
+
+ for(var k=0;k<newscanRuleArr.length;k++)
+    {
+      if(!(checkDuplicateValue(newscanRuleArr[k])))
+      {
+         return 0;
+      }
+
+      for(var l=0;l<newscanRuleArr[k].length;l++)
+       {
+         if(sigkeyArr.indexOf(newscanRuleArr[k][l]) < 0 )
+           {
+               return 0;
+            }
+      }
+    }
+ return 1;
+}
+
+<!-- duplicate value in scan rule -->
+function checkDuplicateValue(arr)
+{
+    tempScan = arr.sort();
+    for(var i = 0;i< tempScan.length;i++)
+    {
+      if(tempScan[i] == tempScan[i+1])
+      {
+        return 0;
+      }
+    }
+    return 1;
+}
+
+
+function getSignaturePatternOnAdd()
+{
+        <!-- get pattern -->
+         var i=1
+        jQuery('#SignatureData').val('');
+             while(i <= jQuery("#tableData tbody tr").length){
+             jQuery('#tableData tr:eq('+i+')').each(function(){
+             sig = jQuery('#tableData tr:eq('+i+') td:first').text() +":"+jQuery('#tableData tr:eq('+i+') td:eq(1)').text();
+             SignatureData(sig,"SignatureData");
+            });
+            i = i+1;
+        }
+
+        if(jQuery("#tableData tbody tr").length < 2)
+        {
+         jQuery("#tableData tbody th").hide();
+         jQuery(".tableData .deleteMul").hide();
+         jQuery(".ScanRuleSuspDiv").hide();
+         jQuery(".ScanRuleDiv").hide();
+         jQuery(".ScanRuleSequenceDiv").hide();
+        }
+        else
+        {
+          jQuery("#tableData tbody th").show();
+         jQuery(".tableData .deleteMul").show();
+         jQuery(".ScanRuleSuspDiv").show();
+         jQuery(".ScanRuleDiv").show();
+         jQuery(".ScanRuleSequenceDiv").show();
+        }
+        if(jQuery("#tableData tbody tr").length <= 26)
+        {
+         jQuery(".sig-modal-btn #patternmodalbtn").removeAttr('disabled');
+        }
+        }
+
+        <!--get all pattern on form submit-->
+        function getSignatureData()
+        {
+
+
+        <!-- get scan rule data -->
+
+        scanRuleData = jQuery('#ScanRule').val();
+        scanRuleData = scanRuleData.replace(/\s/g,"");
+        jQuery('#ScanRule').val(scanRuleData);
+         if(scanRuleData[0] == '|' || scanRuleData[scanRuleData.length-1] == '|' ||  scanRuleData.indexOf('||') > -1 )
+           { return 0;
+           }
+
+        <!-- get scan rule  susp data -->
+
+             {% if 'SCAN_RULE_SUSP' in data.ClusterFieldAllowed %}
+                    ScanRuleSuspData = jQuery('#ScanRuleSusp').val();
+                    if(ScanRuleSuspData){
+                    ScanRuleSuspData = ScanRuleSuspData.replace(/\s/g,"");
+                    jQuery('#ScanRuleSusp').val(ScanRuleSuspData);
+                     if(ScanRuleSuspData[0] == '|' || ScanRuleSuspData[ScanRuleSuspData.length-1] == '|' ||  ScanRuleSuspData.indexOf('||') > -1 )
+                       { return 0;
+                       }}
+           {% endif %}
+
+        sigkeyArr = [];
+        FilterFieldArr = [];
+        FilterOperationArr = [];
+        FilterValueArr = [];
+        <!-- get pattern -->
+         var i=1
+        jQuery('#SignatureData').val('');
+             while(i <= jQuery("#tableData tbody tr").length){
+             jQuery('#tableData tr:eq('+i+')').each(function(){
+             sig = jQuery('#tableData tr:eq('+i+') td:first').text() +":"+jQuery('#tableData tr:eq('+i+') td:eq(1)').text();
+             sigkeyArr.push(jQuery('#tableData tr:eq('+i+') td:first').text())
+             SignatureData(sig,"SignatureData");
+            });
+            i = i+1;
+        }
+
+           if(!(scanRuleValidation(sigkeyArr,'ScanRule')) || !(scanRuleValidation(sigkeyArr,'ScanRuleSusp')))
+          {
+            return 0;
+           }
+
+
+        <!-- get pattern cleanUpType -->
+        var k=1;
+        jQuery('#PatternCleanUpType').val('');
+            while(k <= jQuery("#tableData tbody tr").length)
+            {
+            jQuery('#tableData tr:eq('+k+')').each(function(){
+                  cleanUpType = jQuery('#tableData tr:eq('+k+') td:first').text() +":"+document.getElementById( "cleanUpType["+this.id +"]" ).value;
+                  SignatureData(cleanUpType,"PatternCleanUpType");
+            });
+           k = k+1;
+        }
+
+        <!-- get pattern startToken -->
+        var k=1;
+        jQuery('#PatternStartTokenData').val('');
+            while(k <= jQuery("#tableData tbody tr").length)
+            {
+            jQuery('#tableData tr:eq('+k+')').each(function(){
+                  startToken = jQuery('#tableData tr:eq('+k+') td:first').text() +":"+document.getElementById( "PatternStartToken["+this.id +"]" ).value;
+                  SignatureData(startToken,"PatternStartTokenData");
+            });
+           k = k+1;
+        }
+        <!-- get pattern endToken -->
+        var k=1;
+        jQuery('#PatternEndTokenData').val('');
+            while(k <= jQuery("#tableData tbody tr").length)
+            {
+            jQuery('#tableData tr:eq('+k+')').each(function(){
+                  endToken = jQuery('#tableData tr:eq('+k+') td:first').text() +":"+document.getElementById( "PatternEndToken["+this.id +"]" ).value;
+                  SignatureData(endToken,"PatternEndTokenData");
+            });
+           k = k+1;
+        }
+
+        <!-- get pattern LocationId -->
+        var k=1;
+        jQuery('#PatternLocationId').val('');
+            while(k <= jQuery("#tableData tbody tr").length)
+            {
+            jQuery('#tableData tr:eq('+k+')').each(function(){
+
+                  LocationId = jQuery('#tableData tr:eq('+k+') td:first').text() +":"+document.getElementById( "LocationId["+this.id +"]" ).value;
+                  SignatureData(LocationId,"PatternLocationId");
+            });
+           k = k+1;
+        }
+
+        <!-- get pattern Offset -->
+        var k=1;
+        jQuery('#PatternOffset').val('');
+            while(k <= jQuery("#tableData tbody tr").length)
+            {
+            jQuery('#tableData tr:eq('+k+')').each(function(){
+                  Offset = jQuery('#tableData tr:eq('+k+') td:first').text() +":"+document.getElementById( "Offset["+this.id +"]" ).value;
+                  SignatureData(Offset,"PatternOffset");
+            });
+           k = k+1;
+        }
+
+
+        <!-- get pattern BufferSize -->
+        var k=1;
+        jQuery('#PatternBufferSize').val('');
+            while(k <= jQuery("#tableData tbody tr").length)
+            {
+            jQuery('#tableData tr:eq('+k+')').each(function(){
+                  BufferSize = jQuery('#tableData tr:eq('+k+') td:first').text() +":"+document.getElementById( "BufferSize["+this.id +"]" ).value;
+                  SignatureData(BufferSize,"PatternBufferSize");
+            });
+           k = k+1;
+        }
+
+
+        <!-- get pattern Distance -->
+        var k=1;
+        jQuery('#PatternDistance').val('');
+            while(k <= jQuery("#tableData tbody tr").length)
+            {
+            jQuery('#tableData tr:eq('+k+')').each(function(){
+                  Distance = jQuery('#tableData tr:eq('+k+') td:first').text() +":"+document.getElementById( "Distance["+this.id +"]" ).value;
+                  SignatureData(Distance,"PatternDistance");
+            });
+           k = k+1;
+        }
+
+        <!-- get pattern WeakSig -->
+        var k=1;
+        jQuery('#PatternWeakSigData').val('');
+            while(k <= jQuery("#tableData tbody tr").length)
+            {
+            jQuery('#tableData tr:eq('+k+')').each(function(){
+
+                  WeakSig = jQuery('#tableData tr:eq('+k+') td:first').text() +":"+document.getElementById( "PatternWeakSig["+this.id +"]" ).value;
+                  SignatureData(WeakSig,"PatternWeakSigData");
+            });
+           k = k+1;
+        }
+
+        <!-- get Filter Field  -->
+        var k=1;
+        jQuery('#PatternFilterField').val('');
+            while(k <= jQuery("#filterTableData tbody tr").length)
+            {
+            jQuery('#filterTableData tr:eq('+k+')').each(function(){
+                FilterField = jQuery('#filterTableData tr:eq('+k+') td:first').text() +":"+document.getElementById( "FilterField["+this.id+"]" ).innerHTML;
+                SignatureData(FilterField,"PatternFilterField");
+            });
+            k = k+1;
+        }
+        <!-- get Filter Options  -->
+        var k=1;
+        jQuery('#PatternFilterOperation').val('');
+            while(k <= jQuery("#filterTableData tbody tr").length)
+            {
+                jQuery('#filterTableData tr:eq('+k+')').each(function(){
+                     FilterOperation = jQuery('#filterTableData tr:eq('+k+') td:first').text() +":"+document.getElementById( "FilterOperation["+this.id+"]" ).innerHTML;
+                     SignatureData(FilterOperation,"PatternFilterOperation");
+                });
+           k = k+1;
+        }
+
+
+        <!-- get Filter Value  -->
+        var k=1;
+        jQuery('#PatternFilterFieldInput').val('');
+            while(k <= jQuery("#filterTableData tbody tr").length)
+            {
+                jQuery('#filterTableData tr:eq('+k+')').each(function(){
+                     FilterFieldInput = jQuery('#filterTableData tr:eq('+k+') td:first').text() +":"+document.getElementById( "FilterFieldInput["+this.id+"]" ).innerHTML;
+                     SignatureData(FilterFieldInput,"PatternFilterFieldInput");
+                });
+           k = k+1;
+        }
+return 1;
+} <!--end getSignaturePatternOnAdd -->
+
+
+
+
+function modal()
+{
+    jQuery('#patternInput').val("");
+    jQuery('#PatternComment').val("");
+    jQuery('#Offset').val("0");
+    jQuery('#BufferSize').val("0");
+    jQuery('#Distance').val("0");
+    jQuery(".model-mainContent").show();
+    jQuery("#SignatureData-error").hide();
+    jQuery('#CleanUpType').val('1');
+    jQuery(".startEndToken").addClass('hidden');
+}
+
+var confirmProceed = 1,ignoreCase = 0;
+function procesPopup(action){
+    if (action == 0 ){
+    jQuery(".model-mainContent").show();
+    jQuery(".model-popupnav").addClass('hidden');
+    }
+    else{
+    jQuery(".model-mainContent").hide();
+    jQuery(".model-popupnav").removeClass('hidden');
+    }
+}
+
+
+function getModalData()
+{
+      var dataType = "";
+      var pattern= "";
+      var asciiData= "";
+      var PatternWeakSig = 0;
+      var startToken = '';
+      var endToken = '';
+      radioBtn = jQuery('input[name=patternType]:checked').val();
+      patternData = jQuery('#patternInput').val();
+
+      cleanUpType = jQuery('#CleanUpType option:selected').text();
+      PatternComment = jQuery('#PatternComment').val();
+
+     if(patternData == "")
+     {
+            patternError("Signature pattern can not be blank");
+            return 0;
+     }
+
+      if(PatternComment.length > 256)
+      {
+           patternError("Invalid Comment Length");
+            return 0;
+      }else if(!(validateAlphanumeric(PatternComment,'PatternComment')))
+      {
+          patternError("Pattern comment must contain only letters,numbers,full-stop,space or underscore","Back");
+         return 0;
+      }
+
+
+
+      LocationId = jQuery('#LocationId option:selected').text();
+      Offset = jQuery('#Offset').val();
+      BufferSize = jQuery('#BufferSize').val();
+      Distance = jQuery('#Distance').val();
+
+      if(jQuery('#WeakSig').is(':checked'))
+      {
+       PatternWeakSig = 1
+      }
+
+
+     if(Offset.length > 20) { patternError("Invalid offset length"); return 0; }
+     if(BufferSize.length > 20) { patternError("Invalid buffer size length"); return 0; }
+     if(Distance.length > 20) { patternError("Invalid distance length"); return 0; }
+
+      if(jQuery('#CleanUpType option:selected').val() == 2 || jQuery('#CleanUpType option:selected').val() == 3)
+      {
+        startToken = jQuery('#startToken').val();
+        endToken = jQuery('#endToken').val();
+        if(startToken.trim() == '')
+        {
+           patternError("Start token can not be blank");
+            return 0;
+        }
+         if(endToken.trim() == '')
+        {
+           patternError("End token can not be blank");
+            return 0;
+        }
+
+          if(startToken.length > 256 || endToken.length > 256)
+      {
+           patternError("Invalid token length");
+            return 0;
+      }
+
+       isEngCharstartToken =  checkEngChar(startToken)
+       isEngCharendToken =  checkEngChar(endToken)
+           if(!(isEngCharstartToken) || !(isEngCharendToken))
+           {
+            patternError("Token support only english characters","Back")
+             return 0;
+           }
+      }
+
+    <!-- simple raw =0 and hex=1 -- >
+    if({{data.signatureType.normalised}} == "0")
+    {
+          if(radioBtn == 1)
+          {
+
+           hexData = isHex(patternData);
+
+           if(hexData)
+           {
+           asciiData =  convertToAscii(hexData);
+           pattern = hexData;
+           dataType = 1;
+           }
+           else
+           {
+                return 0;
+           }
+          }
+
+           if(radioBtn == 0)
+          {
+
+           isEngChar =  checkEngChar(patternData)
+           if(!(isEngChar))
+           {
+            patternError("Pattern support only english characters","Back")
+             return 0;
+           }
+
+           hexData =  convertToHex(patternData);
+           hexData = isHex(hexData);
+           if(hexData)
+               {
+               asciiData = convertToAscii(hexData);
+               pattern = hexData;
+               dataType = 0;
+               }
+               else
+               {
+               return 0;
+               }
+          }
+	}<!-- end of simple -->
+
+     <!-- normalised raw = 0 and hex = 1-- >
+        if({{data.signatureType.normalised}} == "1")
+        {
+
+         if(radioBtn == 1)
+              {
+               hexString = isHex(patternData);
+
+               if(hexString)
+               {
+               asciiData =  convertToAscii(hexString);
+               pattern = hexString;
+               dataType = 1;
+
+               }
+               else
+               {
+
+                  return 0;
+               }
+              }
+               if(radioBtn == 0)
+              {
+
+                isEngChar =  checkEngChar(patternData)
+                if(!(isEngChar))
+                   {
+
+                     patternError("Token support only english characters","Back")
+                     return 0;
+                   }
+
+               patternData = patternData.replace(/\s/g, '').toLowerCase();
+               hexData =  convertToHex(patternData);
+               hexData = isHex(hexData);
+
+               if(hexData)
+               {
+               asciiData =  convertToAscii(hexData);
+               pattern = hexData;
+               dataType = 0;
+               }
+               else
+               {
+               return 0;
+               }
+              }
+        } <!-- end of normalised -->
+
+    <!-- add pattern to table -- >
+    jQuery('#tableData').show();
+
+    if( patternData && asciiData)
+    {
+     patternData = pattern.toUpperCase();
+    asciiData = asciiData;
+    row = jQuery("#tableData tbody tr").length;
+
+    if(row > 26)
+    {
+        jQuery(".sig-modal-btn #patternmodalbtn").attr('disabled','disabled');
+        patternError("Signature can have max 26 pattern");
+        return 0;
+    }
+    len = row;
+    row = String.fromCharCode(64+row);
+    jQuery('#tableData').append('<tr class="child" id="'+len+'" class="col-lg-12"  title="View Pattern Details"  ><td id="rowIndex['+len+']" class="col-lg-1">'+row+'</td><td id="data['+len+']" class="col-lg-4 hex-data"  role="button"  title="View Pattern Details" data-toggle="modal" data-target="#patternDetails" onclick="getPatternDetails('+len+');">'+patternData+'</td><td id="ascii['+len+']" class="col-lg-4 ascii-data"  role="button"  title="View Pattern Details" data-toggle="modal" data-target="#patternDetails" onclick="getPatternDetails('+len+');">'+asciiData+'</td><td ><a id="'+len+'" role="button" data-toggle="tooltip" data-placement="bottom" title="Remove Pattern" onclick="removeRow(this.id,\'tableData\');" ><span class="glyphicon glyphicon-trash" ></span></a></td><td><input type="checkbox" name="deletepatterntableData" id="'+len+'" role="button" /></td><td ><span id="type['+len+']" hidden="hidden">'+dataType+'</span><input type="text" name="cleanUpType['+len+']"  hidden="hidden" id="cleanUpType['+len+']" value="'+cleanUpType+'"/><input type="text" name="PatternComments" id="PatternComment['+len+']" value="'+PatternComment+'" hidden="hidden"/><input type="text" name="LocationId['+len+']" id="LocationId['+len+']" value="'+LocationId+'" hidden="hidden"/><input type="text" name="Offset['+len+']" id="Offset['+len+']" value="'+Offset+'" hidden="hidden"/><input type="text" name="BufferSize['+len+']" id="BufferSize['+len+']" value="'+BufferSize+'" hidden="hidden"/><input type="text" name="Distance['+len+']" id="Distance['+len+']" value="'+Distance+'" hidden="hidden"/><input type="text" name="PatternWeakSig['+len+']" id="PatternWeakSig['+len+']" value="'+PatternWeakSig+'" hidden="hidden"/><input type="text" name="PatternStartToken['+len+']" id="PatternStartToken['+len+']" value="'+startToken+'" hidden="hidden"/><input type="text" name="PatternEndToken['+len+']" id="PatternEndToken['+len+']" value="'+endToken+'" hidden="hidden"/></td></tr>');
+    jQuery('#inputData').val("");
+    }
+    else
+    {
+        return 0;
+    }
+     if(jQuery("#tableData tbody tr").length > 1)
+        {
+         jQuery(".tableData .deleteMul").show();
+         jQuery("#tableData tbody th").show();
+         jQuery(".ScanRuleDiv").removeClass('hidden');
+         jQuery(".ScanRuleSuspDiv").removeClass('hidden');
+
+        }
+
+ jQuery("#sigModal .close").click();
+ getSignaturePatternOnAdd();
+}
+
+<!-- check pattern already available -->
+function getTableColumnValues(newHexData)
+{
+    var table=document.getElementById('tableData');
+     for(var i=1;i<jQuery("#tableData tbody tr").length;i++){
+
+       if(newHexData.toUpperCase() == table.rows[i].cells[1].innerHTML )
+           {
+             patternError("Pattern already available");
+             return 0;
+            }
+      }
+ return 1;
+}
+
+<!-- check pattern is hex -->
+function isHex(hex) {
+
+     patt = /[0-9a-fA-F?]/g;
+
+     hexString = hex.match(patt);
+
+     if(hexString)
+     {
+             hexString = hexString.join("");
+
+             if(hex.replace(/\s/g, "").length != hexString.length)
+             {
+                patternError("Invalid hex","Back")
+                ignoreCase ++;
+                return 0;
+
+             }
+      }
+      else
+      {
+            patternError("Invalid hex","Back")
+                ignoreCase ++;
+                return 0;
+      }
+
+     if(hexString.length%2 != 0 || hexString.length > 512 || hexString.length < 12)
+     {
+        patternError("Invalid signature length","Back")
+        return 0;
+     }
+
+     <!-- for first and last word '?' -->
+
+     dummyHexString = hexString;
+     length = dummyHexString.length;
+     strIndexArr = [dummyHexString[0],dummyHexString[1],dummyHexString[2],dummyHexString[3],dummyHexString[length-4],dummyHexString[length-3],dummyHexString[length-2],dummyHexString[length-1]]
+     if(strIndexArr.indexOf('?') > -1 )
+     {
+             if(jQuery('input[name=patternType]:checked').val() == 0)
+             {patternError("Wild card character(?) not allowed in first two and last two character of pattern ");}
+             else {
+             patternError("Wild card character(?) not allowed in first four  and last four character of pattern ");}
+
+             return 0;
+     }
+
+      <!-- for 2 consecutive '?' -->
+     for(var c =0; c < hexString.length;c=c+2)
+     {
+            if(hexString[c] == '?' || hexString[c+1] == '?')
+            {
+
+              if(hexString[c+1] != '?' || hexString[c] != '?')
+              {
+                        patternError("Invalid signature pattern required 2 consecutive '?' ");
+                        return 0;
+              }
+            }
+     }
+
+  <!-- for normalised -- >
+             if({{data.signatureType.normalised}} == 1)
+             {
+                     hexData = "";
+                         for(i=0;i<hexString.length;i=i+2)
+                         {
+                           if(hexString[i+1])
+                           {
+                            hexChar = hexString[i]+""+hexString[i+1];
+                           }
+                           else
+                           {
+                            hexChar = hexString[i];
+                           }
+
+                            //hexChar = toLowerHex(ignoreChar(hexChar));
+
+                            hexChar = ignoreChar(hexChar);
+
+                            if(hexChar == "")
+                            {
+                                  if(confirmProceed == 1)
+                                  {
+                                         ignoreCase++;
+
+                                  }
+                                   confirmProceed = 0;
+
+                            }
+                            hexData += hexChar;
+                 }
+
+                 //for duplicate entry
+                 checkData = getTableColumnValues(hexData);
+                 if(checkData)
+                 {
+                       return hexData;
+                 }
+                  return 0;
+        }
+
+     //for duplicate entry
+    checkData = getTableColumnValues(hexString);
+    if(checkData)
+    {
+         return hexString;
+    }
+   return 0;
+ }
+
+
+function ignoreChar(hexChar)
+{
+    ignoreArr = ["00","20","09","0A","0B","0C","0D"];
+    var index = ignoreArr.indexOf(hexChar);
+    if(index > -1)
+        {
+           hexChar = "";
+           return hexChar;
+        }
+    else
+    {
+    return hexChar;
+    }
+
+}
+
+function toLowerHex(hexChar)
+{
+    upperHexChar = ["41","42","43","44","45","46"];
+    lowerHexChar = ["61","62","63","64","65","66"];
+
+    index = upperHexChar.indexOf(hexChar);
+    if(index > -1)
+    {
+     hexChar = lowerHexChar[index];
+    }
+  return hexChar;
+}
+
+
+function convertToHex(str) {
+        var hex = '';
+
+        for(var i=0;i<str.length;i++) {
+
+            if(str[i] == '\\')
+            {
+                    if(str[i+1] == '?')
+                    {
+                     hex += '3F';
+                     i = i+1;
+                    }
+            }
+            else if(str[i] == '?')
+            {
+              hex += '??'
+            }
+            else
+            {
+            hex += ''+str.charCodeAt(i).toString(16);
+            }
+        }
+       return hex
+}
+
+function convertToAscii(str) {
+      var hex = str.toString();
+      var str = '';
+      for (var n = 0; n < hex.length; n+=2) {
+          if(hex[n]+""+hex[n+1] == '??')
+          {
+               str += "?";
+          }
+          else  if( (hex[n]+""+hex[n+1]).toUpperCase() == '3F')
+          {
+                str += "\\?";
+          }
+          else
+          {
+             str += String.fromCharCode(parseInt(hex.substr(n, 2), 16));
+          }
+      }
+
+      if(str.length < 6)
+      {
+         patternError("Invalid signature length","Back")
+        return 0;
+      }
+      return str;
+}
+
+
+function patternError(errMsg,btn1="Back",btn2="Cancel")
+{
+    jQuery('.modal-body .patternError').html('<span class="error hidden" ><b>'+errMsg+'</b></span>');
+     jQuery('.modal-body .patternError').show();
+     jQuery('.modal-body .patternError .error').removeClass('hidden');
+     jQuery('.modal-footer #patternbtn1').text(btn1)
+     procesPopup(3);
+
+}
+
+
+
+function checkEngChar(data)
+{
+   raw_match =  /[a-zA-Z0-9\@\!\#\$\^\%\&\*\(\)\+\=\-\[\]\\\'\;\,\.\/\{\}\|\"\:\<\>\?\~\_]/g;
+   new_data = data.match(raw_match);
+
+   if(new_data.join("").length != data.replace(/\s/g, "").trim().length)
+   {
+       return 0;
+   }
+   return 1;
+}
+
+function validateAlphanumeric(data)
+{
+    patt = /[a-zA-Z0-9.\_\s]/g;
+    new_data = data.match(patt);
+    if(new_data)
+    {    if(new_data.join("").length != data.length)
+        {
+        return 0;
+       }
+     }
+return 1;
+}
+
+</script>
+
+
+<div class="row">
+   <div class="controls">
+      <form id="signatureForm" role="form" name="signatureForm" action="/signature/{{SigId}}" method="post"  enctype="multipart/form-data" >
+         {% csrf_token %}
+         <div class="col-lg-12">
+            <fieldset>
+               <legend align="left">Signature Details: </legend>
+               <div class="row col-md-12">
+                  <div class="row col-md-6">
+                     <div class="input-group form-group ">
+                        <div class="input-group-addon ">TRR_ID</div>
+                        <input type="text" name="MalwareIndex" class="form-control " id="MalwareIndex" {% if data.MalwareIndex %} value="{{data.MalwareIndex}}" {% else %} value="NA"{% endif %} placeholder="Enter MalwareIndex" readonly="readonly">
+                     </div>
+                  </div>
+                  <div class=" col-md-6">
+                     <div class="input-group form-group ">
+                        <div class="input-group-addon">Threat Name<span class="required-field"> *</span></div>
+                        {{data.malwareDropDown|safe}}
+                     </div>
+                  </div>
+               </div>
+               <div class="row col-md-12">
+                  <div class="row col-md-6 ">
+                     <div class="input-group form-group  ">
+                        <div class="input-group-addon">Cluster ID </div>
+                        <input type="text" name="ClusterId" class="form-control" id="ClusterId" value="{{data.ClusterId}}" placeholder="Enter ClusterId" readonly="readonly" />
+                     </div>
+                  </div>
+                  <div class="col-md-6 ">
+                     <div class="input-group form-group  ">
+                        <div class="input-group-addon">Type &nbsp;&emsp;</div>
+                        <input type="text" name="clusterType" class="form-control"  value="{{data.clusterType}}" readonly="readonly" />
+                     </div>
+                  </div>
+               </div>
+               <div class="row col-md-12">
+                  {% if 'POLYFUNC' in data.ClusterFieldAllowed %}
+                  <div class="row col-md-6">
+                     <div class="input-group form-group">
+                        <div class="input-group-addon">PolyFunIndex</div>
+                        <input type="number" name="PolyFunIndex"  class="form-control" id="PolyFunIndex" {% if data.PolyFuncIndex %} value="{{data.PolyFuncIndex}}" {% else %} value="-1" {% endif %} placeholder="Enter PolyFunIndex" min="-1">
+                     </div>
+                  </div>
+                  {% endif %}
+                  {% if 'SUS_WEAK_DETECTION' in data.ClusterFieldAllowed %}
+                  <div class="{% if 'POLYFUNC' in data.ClusterFieldAllowed %}  col-md-6 {% else %} row col-md-6  {% endif %}" >
+                     <div class="input-group form-group ">
+                        <label>Suspicious/Weak detection &nbsp;</label>
+                        <input type="checkbox"  value="1" id="WeakDetection" name="WeakDetection"  data-group-cls="btn-group-xs"  data-switch-always    {% if data.susWeakDetection %} checked="checked"  {% endif %}>
+                     </div>
+                  </div>
+                  {% endif %}
+               </div>
+               <div class="row col-md-12">
+                  {% if data.fileTypeSelect %}
+                  <div class="row col-md-6">
+                     <label class="">FileType <span class="required-field"> *</span></label>
+                     <div class="input-group form-group" id="fileTypeId"> {{data.fileTypeSelect|safe}} </div>
+                  </div>
+                  {% endif %}
+                  <div class="col-md-6">
+                     <div class="input-group form-group sigTag">
+                        <label>Tag</label>
+                        <input id="tagsinput" name="tagsinput"  value="{{data.tagResult|safe}}" type="text" class="form-control tagsinput" />
+                        <span id="error" class="help-block tag-error"></span>
+                     </div>
+                  </div>
+
+               </div>
+               <div>
+                  <div class="row col-md-12">
+                     <div class="row col-md-6">
+                    {{data.stateArr|safe}}
+                        </div>
+                      <div class="col-md-6">
+                        <label for="RecordComment">Comment</label>
+                        <textarea name="RecordComment" id="RecordComment" value="{{data.RecordComment}}" class="form-control"  >{{data.RecordComment}}</textarea>
+                     </div>
+                  </div>
+               </div>
+               <div class="form-group dynamic_field " id="pattern_signature_field">
+                  <div class="row col-md-12">
+                     <div class="row col-md-6">
+                        <label >Pattern Details <span class="required-field"> *</span></label>
+                        <div class=" form-group input-group sig-modal-btn ">
+                           <button class="btn btn-default" id="patternmodalbtn" type="button" data-toggle="modal" title="Add Pattern"  data-target="#sigModal" onclick="modal()">Add Pattern &nbsp;<span class="glyphicon glyphicon-plus"></span> </button>
+                        </div>
+                     </div>
+
+                  </div>
+                  <!----signature modal !-->
+                  <div class="container">
+                     <!-- Modal -->
+                     <div class="modal fade" id="sigModal"  role="dialog">
+                        <div class="modal-dialog">
+                           <!-- Modal content-->
+                           <div class="modal-content">
+                              <div id="model-mainContent">
+                                 <div class="modal-header ">
+                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                    <h4 class="modal-title ">Add Pattern</h4>
+                                 </div>
+                                 <div class="modal-body model-mainContent col-md-12">
+                                    <div class="row col-md-12">
+                                       <label>Pattern</label>
+                                       <input type="text" class="form-control" id="patternInput" name="Signature"  placeholder="Enter Pattern" minlength="1" maxlength="512">
+                                       {% if data.signatureType.normalised  == "1" %}
+                                       <label class="radio-inline">
+                                       <input type="radio" name="patternType" value="0" checked="checked" >
+                                       Normalised Raw</label>
+                                       <label class="radio-inline">
+                                       <input type="radio" name="patternType" value="1">
+                                       Normalised Hex</label>
+                                       {% else %}
+                                       <label class="radio-inline">
+                                       <input type="radio" name="patternType" value="0" checked="checked" >
+                                       Text</label>
+                                       <label class="radio-inline">
+                                       <input type="radio" name="patternType" value="1">
+                                       Hex</label>
+                                       {% endif %}
+                                    </div>
+                                    <div class="row col-md-12">
+                                       <br>  <label for="PatternComment">Comment</label>
+                                       <textarea name="PatternComment" id="PatternComment" class="form-control"></textarea>
+                                    </div>
+                                    {% if 'CLEANUP_TYPE' in data.ClusterFieldAllowed  %}
+                                    <div class="row col-md-12"><br>{{data.signatureCleanUpTypeDropDown|safe}}</div>
+                                    <div class="row startEndToken hidden col-md-12">
+                                       <br>
+                                       <div class="row col-md-6">
+                                          <label for="startToken">Start Token </label>
+                                          <input type="text" name="startToken" class="form-control" id="startToken" value="" placeholder="Enter Start Token" maxlength="256" />
+                                       </div>
+                                       <div class="col-md-6">
+                                          <label for="startToken">Start Token </label>
+                                          <input type="text" name="endToken" class="form-control" id="endToken" value="" placeholder="Enter End Token"  maxlength="256"/>
+                                       </div>
+                                    </div>
+                                    {% endif %}
+                                    {% if 'LOCATION_ID' in data.ClusterFieldAllowed  %}
+                                    <div class="row col-md-12"><br>{{data.signatureLocationIdDropDown|safe}}</div>
+                                    {% endif %}
+                                    <div class="row col-md-12">
+                                       {% if 'OFFSET' in data.ClusterFieldAllowed %}
+                                       <br>
+                                       <div class="row col-md-4">
+                                          <label>Offset</label>
+                                          <input type="number" min="0" value="0"  class="form-control" id="Offset" name="Offset"  placeholder="Enter Offset" >
+                                       </div>
+                                       {% endif %}
+                                       {% if 'BUFFER' in data.ClusterFieldAllowed %}
+                                       <div class="col-md-4">
+                                          <label>BufferSize</label>
+                                          <input type="number" min="0" value="0" class="form-control" id="BufferSize" name="BufferSize"  placeholder="Enter BufferSize" >
+                                       </div>
+                                       {% endif %}
+                                       {% if 'DISTANCE' in data.ClusterFieldAllowed %}
+                                       <div class="col-md-4">
+                                          <label>Distance</label>
+                                          <input type="number" min="0" value="0" class="form-control" id="Distance" name="Distance"  placeholder="Enter Distance">
+                                       </div>
+                                       {% endif %}
+                                    </div>
+                                    {% if 'WEAK_SIG' in  data.ClusterFieldAllowed %}
+                                    <div class="row col-md-6"><br>
+                                       <label>WeakSig &nbsp;</label>
+                                       <input type="checkbox"  value="1" id="WeakSig" name="WeakSig" data-group-cls="btn-group-xs"  data-switch-always>
+                                    </div>
+                                    {% endif %}
+                                 </div>
+                                 <div class="modal-footer model-mainContent">
+                                    <button type="button" class="btn btn-danger " data-dismiss="modal">Close</button>
+                                    <button type="button" id="submitPattern" onclick="getModalData()" class="btn btn-primary">Submit</button>
+                                 </div>
+                                 <div class="modal-body model-popupnav hidden">
+                                    <p class="patternError" ></p>
+                                 </div>
+                                 <div class="modal-footer model-popupnav hidden" >
+                                    <button type="button" onclick="procesPopup(0);"  class="btn btn-default" id="patternbtn1">Back</button>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+
+               <!----signature modal  !-->
+               <p class="patternError" ></p>
+               <input class="form-control" id="SignatureData" name="SignatureData" type="hidden" value="{{data.sigPattern}}"  />
+               <input class="form-control" id="PatternCommentData" name="PatternCommentData"  value=" "  type="hidden" />
+               <input class="form-control" id="PatternCleanUpType" name="PatternCleanUpType"  value=" "  type="hidden" />
+               <input class="form-control" id="PatternLocationId" name="PatternLocationId"  value=" "  type="hidden" />
+               <input class="form-control" id="PatternOffset" name="PatternOffset"  value=" "  type="hidden" />
+               <input class="form-control" id="PatternBufferSize" name="PatternBufferSize"  value=" "  type="hidden" />
+               <input class="form-control" id="PatternDistance" name="PatternDistance"  value=" "  type="hidden" />
+               <input class="form-control" id="PatternWeakSigData" name="PatternWeakSigData"  value=" "  type="hidden" />
+               <input class="form-control" id="PatternStartTokenData" name="PatternStartTokenData"  value=" "  type="hidden" />
+               <input class="form-control" id="PatternEndTokenData" name="PatternEndTokenData"  value=" "  type="hidden" />
+
+               {% if data.signatures %}
+                       <div class="tableData">
+                          <br>
+                          <table id="tableData" name="Signature" class="table col-lg-12">
+                             <tr>
+                                <th class="col-lg-1"></th>
+                                <th class="col-lg-5" >HexData</th>
+                                <th class="col-lg-5">Ascii Value</th>
+                                <th></th>
+                                <th> <input type="checkbox" onClick="getCheckAll('tableDatacheckAll','deletepatterntableData')" id="tableDatacheckAll"> </th>
+                                <th></th>
+                             </tr>
+                             {% for key ,value in data.signatures %}
+                             <tr class="child" id="{{ forloop.counter }}" title="View Pattern Details" >
+                                <td  class="col-lg-1" id="rowIndex[{{forloop.counter}}]">{{key}}</td>
+                                <td  id="data[{{ forloop.counter }}]" class="col-lg-4 hex-data" role="button"  title="View Pattern Details"  data-toggle="modal" data-target="#patternDetails" onclick="getPatternDetails({{ forloop.counter }})">{{value.pattern}}</td>
+                                <td  id="ascii[{{ forloop.counter }}]" class="col-lg-4 ascii-data" role="button"  title="View Pattern Details" data-toggle="modal" data-target="#patternDetails" onclick="getPatternDetails({{ forloop.counter }})"></td>
+                                <script>
+                                   asciival = convertToAscii("{{value.pattern}}")
+                                     rowId =  document.getElementById ( "ascii["+{{ forloop.counter }}+"]" )
+                                     rowId.innerText = asciival;
+
+                                </script>
+                                <td  ><a  id="{{ forloop.counter }}" onclick="removeRow(this.id,'tableData')" role="button" data-toggle="tooltip" data-placement="bottom" title="Remove Pattern"><span class="glyphicon glyphicon-trash" hidden="hidden"></span></a></td>
+                                <td  ><input type="checkbox" name="deletepatterntableData" id="{{ forloop.counter }}" role="button"/></td>
+                                <td><span id="type[{{ forloop.counter }}]" hidden="hidden">1</span>
+                                   <input type="text" name="cleanUpType[{{ forloop.counter }}]"  hidden="hidden" id="cleanUpType[{{ forloop.counter }}]" value="{{value.CleanupType}}"/>
+                                   <input type="text" name="PatternComments" id="PatternComment[{{ forloop.counter }}]" value="{{value.Comment}}" hidden="hidden"/>
+                                   <input type="text" name="LocationId[{{ forloop.counter }}]" id="LocationId[{{ forloop.counter }}]" value="{{value.LocId}}" hidden="hidden"/>
+                                   <input type="text" name="Offset[{{ forloop.counter }}]" id="Offset[{{ forloop.counter }}]" value="{{value.offset}}" hidden="hidden"/>
+                                   <input type="text" name="BufferSize[{{ forloop.counter }}]" id="BufferSize[{{ forloop.counter }}]" value="{{value.BuffSize}}" hidden="hidden"/>
+                                   <input type="text" name="Distance[{{ forloop.counter }}]" id="Distance[{{ forloop.counter }}]" value="{{value.Distance}}" hidden="hidden"/>
+                                   <input type="text" name="PatternWeakSig[{{ forloop.counter }}]" id="PatternWeakSig[{{ forloop.counter }}]" value="{{value.WeakSig}}" hidden="hidden"/>
+                                   <input type="text" name="PatternStartToken[{{ forloop.counter }}]" id="PatternStartToken[{{ forloop.counter }}]" value="{{value.StartToken}}" hidden="hidden"/>
+                                   <input type="text" name="PatternEndToken[{{ forloop.counter }}]" id="PatternEndToken[{{ forloop.counter }}]" value="{{value.EndToken}}" hidden="hidden"/>
+                                </td>
+                             </tr>
+                             {% endfor %}
+                          </table>
+                          <p class="deleteMul text-right tableData" ><a role="button" class="deleteMul DeleteMultableData text-right" onclick="deleteMultipleRow('tableData')">Delete Selected</a></p>
+                       </div>
+               {% else %}
+                       <div class="entry input-group col-lg-12 ">
+                          <div  class="col-lg-12 tableData" >
+                             <table id="tableData" name="Signature" class="table col-lg-12" >
+                                <tr>
+                                   <th class="col-lg-1"> </th>
+                                   <th class="col-lg-5" >HexData</th>
+                                   <th class="col-lg-5">Ascii Value</th>
+                                   <th> </th>
+                                   <th> </th>
+                                   <th> </th>
+                                </tr>
+                             </table>
+                             <p  class="deleteMul DeleteMultableData text-right tableData"><a role="button" class="deleteMul" onclick="deleteMultipleRow('tableData')">Delete Selected</a></p>
+                          </div>
+                       </div>
+               {% endif %}
+
+               {% if 'SCAN_RULE' in data.ClusterFieldAllowed %}
+               <div class="input-group form-group ScanRuleDiv  hidden "  >
+                  <div class="input-group-addon">ScanRule</div>
+                  <input type="text" name="ScanRule" class="form-control" id="ScanRule" value="{{data.ScanRule}}" placeholder="Enter ScanRule" onkeyup="showScanSequence(this.id)" onmouseenter="showScanSequence(this.id)" >
+               </div>
+               {% endif %}
+               {% if 'SCAN_RULE_SUSP' in data.ClusterFieldAllowed %}
+               <div class="input-group form-group ScanRuleSuspDiv hidden "  >
+                  <div class="input-group-addon">ScanRuleSusp</div>
+                  <input type="text" name="ScanRuleSusp" class="form-control" id="ScanRuleSusp" value="{{data.ScanRuleSusp}}" placeholder="Enter ScanRuleSusp" onkeyup="showScanSequence(this.id)" onmouseenter="showScanSequence(this.id)" >
+               </div>
+               {% endif %}
+
+               <div class="ScanRuleSequenceDiv hidden">
+                  <label class="ScanRuleSequence" >ScanRuleSequence &nbsp;</label>
+                  <input class=" ScanRuleSequence" type="checkbox" name="ScanRuleSequence"  id="ScanRuleSequence" data-group-cls="btn-group-xs" {% if data.ScanRuleSequence %} checked="checked" {% endif %} data-switch-always  >
+               </div>
+
+               {% if 'STATUS' in data.ClusterFieldAllowed %}
+               <div class="input-group form-group ">
+                  <label>Silent &nbsp;</label>
+                  <input type="checkbox"  value="1" id="sigStatus" name="sigStatus" data-group-cls="btn-group-xs" {% if data.status %} checked="checked"  {% endif %} data-switch-always >
+               </div>
+               {% endif %}
+
+               <!---------------- pattern filter ----->
+               {% if 'FILTER' in  data.ClusterFieldAllowed %}
+                   <hr>
+                   <div class="form-group dynamic_field" id="signature_field">
+                      <label >Filter Details </label>
+                      <div class="form-group input-group  ">
+                         <button class="btn btn-default" id="modalbtn" type="button" data-toggle="modal" title="Add Pattern Filter"  data-target="#sigFilterModal" onclick="modal()">Add Filter&nbsp;&nbsp;<span class="glyphicon glyphicon-plus"></span> </button>
+                      </div>
+                      <!----signature modal !-->
+                      <div class="container">
+                         <!-- Modal -->
+                         <div class="modal fade" id="sigFilterModal" role="dialog" data-backdrop="static" data-keyboard="false">
+                            <div class="modal-dialog">
+                               <!-- Modal content-->
+                               <div class="modal-content">
+                                  <div id="pattern-model-mainContent">
+                                     <div class="modal-header ">
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title ">Add Pattern Filter</h4>
+                                     </div>
+                                     <div class="modal-body model-mainContent">
+                                        <br>
+                                        <table>
+                                           <tr>
+                                              <th class="col-md-3">Filter Field</th>
+                                              <th class="col-md-4">Filter Operation</th>
+                                              <th class="col-md-5">Value </th>
+                                           </tr>
+                                           <tr>
+                                              <td class="col-md-4">{{data.signatureFilterFieldDropDown|safe}}</td>
+                                              <td class="col-md-4">{{data.signatureFilterOperationDropDown|safe}}</td>
+                                              <td class="col-md-4"><input type="text" class="form-control" id="FilterFieldInput" name="FilterFieldInput"  placeholder="Enter Value" minlength="1" ></td>
+                                           </tr>
+                                        </table>
+                                     </div>
+                                     <div class="modal-footer model-mainContent">
+                                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                                        <button type="button" id="submitFilterPattern" onclick="getFilterModalData()" class="btn btn-primary">Submit</button>
+                                     </div>
+                                     <div class="modal-body model-popupnav hidden"  >
+                                        <p class="patternFilterError" ></p>
+                                     </div>
+                                     <div class="modal-footer model-popupnav hidden" >
+                                        <button type="button" onclick="procesPopup(0);"  class="btn btn-default" id="btn1">Back</button>
+                                     </div>
+                                  </div>
+                               </div>
+                            </div>
+                         </div>
+                      </div>
+                   </div>
+
+                   <!----signature filter modal  !-->
+                   <p class="patternFilterError" ></p>
+                   <input class="form-control" id="PatternFilterField" name="FilterField"  value=" "  type="hidden" />
+                   <input class="form-control" id="PatternFilterOperation" name="FilterOperation"  value=" "  type="hidden" />
+                   <input class="form-control" id="PatternFilterFieldInput" name="FilterFieldInput"  value=" "  type="hidden" />
+                   {% if data.filterRecord %}
+                   <div class="filterTableData">
+                          </br>
+                          <table id="filterTableData" name="filterTableData" class="table col-lg-12">
+                             <tr>
+                                <th class="col-lg-1"></th>
+                                <th class="col-lg-3" >Filter Filed</th>
+                                <th class="col-lg-3">Filter Option</th>
+                                <th class="col-lg-3">Value</th>
+                                <th class="col-lg-1"></th>
+                                <th class="col-lg-1"> <input type="checkbox" onClick="getCheckAll('filtercheckAll','deletefilterTableData')" id="filtercheckAll">
+                                </th>
+                             </tr>
+                             {% for filterData in data.filterRecord %}
+                             <tr class="child" id="{{ forloop.counter }}" title="View Pattern Details" >
+                                <td  class="col-lg-1" id="rowIndex[{{forloop.counter}}]">{{filterData.id}}</td>
+                                <td  id="FilterField[{{ forloop.counter }}]" class="col-lg-4" title="View Filter Details"  data-toggle="modal" data-target="#filterDetails" role="button" onclick="getFilterPatternDetails({{ forloop.counter }})">{{filterData.FilterField}}</td>
+                                <td  id="FilterOperation[{{ forloop.counter }}]" class="col-lg-4" title="View Filter Details" data-toggle="modal" data-target="#filterDetails" role="button" onclick="getFilterPatternDetails({{ forloop.counter }})">{{filterData.FilterOperation}}</td>
+                                <td  id="FilterFieldInput[{{ forloop.counter }}]" class="col-lg-4" title="View Filter Details" data-toggle="modal" data-target="#filterDetails" role="button" onclick="getFilterPatternDetails({{ forloop.counter }})">{{filterData.FilterFieldInput}}</td>
+                                <td ><a  id="{{ forloop.counter }}" onclick="removeRow(this.id,'filterTableData')" role="button" data-toggle="tooltip" data-placement="bottom" title="Remove Pattern"><span class="glyphicon glyphicon-trash" hidden="hidden"></span></a></td>
+                                <td class="col-lg-1"><input type="checkbox" name="deletefilterTableData" id="{{ forloop.counter }}" role="button"/></td>
+                                <td class="col-lg-1" ><span id="type[{{ forloop.counter }}]" hidden="hidden">1</span>
+                                   <input type="text" name="FilterField[{{ forloop.counter }}]"  hidden="hidden" id="FilterField[{{ forloop.counter }}]" value=""/>
+                                   <input type="text" name="FilterOperation[{{ forloop.counter }}]" id="FilterOperation[{{ forloop.counter }}]" value="" hidden="hidden"/>
+                                   <input type="text" name="FilterFieldInput[{{ forloop.counter }}]" id="FilterFieldInput[{{ forloop.counter }}]" value="" hidden="hidden"/>
+                             </tr>
+                             {% endfor %}
+                          </table>
+                          <p class="deleteMul text-right filterTableData" ><a role="button" class="deleteMul DeleteMulfilterTableData text-right" onclick="deleteMultipleRow('filterTableData')" >Delete Selected</a></p>
+                   </div>
+                   {% else %}
+                   <div class="entry input-group col-lg-12 ">
+                      <div  class="col-lg-12 filterTableData">
+                         <table id="filterTableData" name="Signature" class="table col-lg-12">
+                            <tr>
+                               <th class="col-lg-1"></th>
+                               <th class="col-lg-3" >Filter Filed</th>
+                               <th class="col-lg-3">Filter Option</th>
+                               <th class="col-lg-3">Value</th>
+                               <th class="col-lg-1"></th>
+                               <th class="col-lg-1"><input type="checkbox" onClick="getCheckAll('filtercheckAll','deletefilterTableData')" id="filtercheckAll"></th>
+                            </tr>
+                         </table>
+                         <p class="deleteMul text-right filterTableData"><a role="button" class="deleteMul DeleteMulfilterTableData" onclick="deleteMultipleRow('filterTableData')" >Delete Selected</a></p>
+                      </div>
+                   </div>
+
+                   {% endif %}
+               {% endif %}
+
+               <!--------------  pattern upate ----->
+               {% if data.sigid %}
+               <input type="text" value="1" name="Update"  hidden>
+               <input type="text" value="{{data.sigid}}" name="SigId"  hidden>
+               {% else %}
+               <input type="text" value="" name="Update"  hidden>
+               {% endif %}
+
+         </fieldset>
+       </div>
+         <div class="col-lg-12">
+            <button type="submit" class="btn btn-primary btn-outline" >Submit</button>
+            {% if "id" in request.GET %} <a href="/signature/{{data.SigId}}?action=view" class="btn btn-primary btn-outline">View</a> {% endif %} <br>
+            <p class="note"><em><span>Note : <strong class="required-field">*</strong> Indicates required field </span></em></p>
+         </div>
+      </form>
+   </div>
+</div>
+
+<!--pattern details modal -->
+<div class="modal fade" id="patternDetails" role="dialog">
+   <div class="modal-dialog" >
+      <div class="modal-content">
+         <div class="modal-header ">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h3 class="modal-title "><b>Pattern Details</b> </h3>
+         </div>
+         <div class="modal-body model-mainContent " >
+            <div class="col-lg-12 content-data" >
+               <p class="col-lg-12"><span class="col-lg-3"><b>Pattern</b></span> <span id="pattern" class="col-lg-9"></span></p>
+               <p class="col-lg-12"><span class="col-lg-3"><b> Ascii</b></span> <span  id="ascii" class="col-lg-9"></span></p>
+               {% if 'CLEANUP_TYPE' in data.ClusterFieldAllowed  %}
+               <p class="col-lg-12"><span class="col-lg-3"><b> CleanUpType</b> </span><span  id="cleanuptype" class="col-lg-8"></span></p>
+               <p class="col-lg-12 patternDetailsStartToken" hidden="hidden"><span class="col-lg-3"><b> StartToken</b> </span><span  id="start_token" class="col-lg-8"></span></p>
+               <p class="col-lg-12 patternDetailsEndToken" hidden="hidden"><span class="col-lg-3"><b> EndToken</b> </span><span  id="end_token" class="col-lg-8"></span></p>
+               {% endif %}
+               {% if 'LOCATION_ID' in data.ClusterFieldAllowed  %}
+               <p class="col-lg-12"><span class="col-lg-3"><b> LocationId </b> </span> <span  id="siglocationId" class="col-lg-9"></span></p>
+               {% endif %}
+               {% if 'WEAK_SIG' in data.ClusterFieldAllowed  %}
+               <p class="col-lg-12"><span class="col-lg-3"><b> WeakSig </b> </span> <span  id="sigweakSig" class="col-lg-9"></span></p>
+               {% endif %}
+               {% if 'OFFSET' in data.ClusterFieldAllowed  %}
+               <p class="col-lg-12"><span class="col-lg-3"><b> Offset </b> </span> <span  id="sigoffset" class="col-lg-9"></span></p>
+               {% endif %}
+               {% if 'BUFFER' in data.ClusterFieldAllowed  %}
+               <p class="col-lg-12"><span class="col-lg-3"><b> BufferSize </b> </span> <span  id="sigbufferSize" class="col-lg-9"></span></p>
+               {% endif %}
+               <p class="col-lg-12"><span class="col-lg-3"><b> Distance </b> </span> <span  id="sigDistance" class="col-lg-9"></span></p>
+               <p class="col-lg-12"><span class="col-lg-3"><b> Comment </b> </span> <span  id="comment" class="col-lg-9"></span></p>
+            </div>
+         </div>
+      </div>
+   </div>
+</div>
+
+<!-- filter details modal-->
+<div class="modal fade" id="filterDetails" role="dialog">
+   <div class="modal-dialog" >
+      <div class="modal-content">
+         <div class="modal-header ">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h3 class="modal-title "><b>Filter Details</b> </h3>
+         </div>
+         <div class="modal-body model-mainContent " >
+            <div class="col-lg-12 content-data">
+               <p class="col-lg-12"><span class="col-lg-4"><b> Filter Field</b></span> <span  id="FilterField" class="col-lg-8"></span></p>
+               <p class="col-lg-12"><span class="col-lg-4"><b> Filter Operation</b> </span><span  id="FilterOperation" class="col-lg-8"></span></p>
+               <p class="col-lg-12"><span class="col-lg-4"><b>Filter value</b></span> <span id="FilterFieldInput" class="col-lg-8"></span></p>
+            </div>
+         </div>
+      </div>
+   </div>
+</div>
+
+
+<!-- confirm delete modal -->
+<div class="modal fade" id="confirmDelete" role="dialog">
+   <div class="modal-dialog" >
+      <div class="modal-content">
+         <div class="modal-header ">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+         </div>
+         <div class="modal-body model-mainContent"> Do you want to delete? </div>
+         <div class="modal-footer">
+            <button type="button" data-dismiss="modal" onclick="" class="btn btn-primary" data-value="1">Delete</button>
+            <button type="button" data-dismiss="modal" class="btn" data-value="0">Cancel</button>
+         </div>
+      </div>
+   </div>
+</div>
+
+{% endblock %}

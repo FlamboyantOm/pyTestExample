@@ -1,0 +1,134 @@
+{% extends "portal/base.html" %}
+
+{% block content %}
+{% load staticfiles %}
+<link href="{% static 'portal/css/dataTables.min.css' %}" rel="stylesheet">
+<script src="{% static 'portal/js/dataTables.min.js' %}"></script> 
+
+<div class="row">
+  <div class="col-lg-12">
+
+    <div id="build-list-div">
+      <table id="build-list"  class="display shadow-in dataTable" cellspacing="0" width="100%">
+        <thead>
+          <tr>
+             <th>RecordID</th>
+            <th>TRR_ID</th>
+            <th>Threat Name</th>
+            <th>Pattern Count</th>
+             <th>Type</th>
+            <th>Cluster</th>
+            <th>State</th>
+             <th>Added By</th>
+             <th>View</th>
+          </tr>
+        </thead>
+        <tfoot>
+          <tr>
+            <th>RecordID</th>
+            <th>TRR_ID</th>
+            <th>Threat Name</th>
+            <th>Pattern Count</th>
+             <th>Type</th>
+            <th>Cluster</th>
+            <th>State</th>
+              <th>Added By</th>
+             <th>View</th>
+          </tr>
+        </tfoot>
+      </table>
+  </div>
+
+  <div class=" col-lg-12 emptyRecord " hidden>
+     <span class="alert-info" ><h3><strong >Signature data not available</strong></h3></span>
+  </div>
+ </div>
+</div>
+
+<script type="text/javascript">
+
+  function loadDefault(tableName,indexID, searchString) {
+            cnt = 0;
+            tableName.columns().every(function() {
+                var that = this;
+                if(cnt == indexID)
+                    that.search(searchString).draw();
+                cnt++;
+            });
+        }
+
+jQuery(document).ready(function() {
+ jQuery('#build-list-div').hide();
+ jQuery('[data-toggle="tooltip"]').tooltip();
+    url = "/signature/list/ajax/"
+    {% if request.GET.AuthorName %}
+    authorName = "{{request.GET.AuthorName}}"
+    url = "/signature/list/ajax/?AuthorName="+authorName;
+
+    {% endif %}
+    table = jQuery('#build-list').DataTable( {
+        "processing": true,
+        "serverSide": true,
+		"order": [[ 0, "desc" ],[1,""],[2,""],[3,""],[4,""],[5,""],[6,""],[7,""],[8,""]],
+        "ajax": {"url": url,},
+		"language": {"processing": "<div class='processing'> Processing ...</div>"},
+		"columns": [{ "data": "RecordId" },{"data" : "MalwareIndex" },{ "data": "MalwareName" },{ "data": "SigCount" },{"data" : "Type"},{ "data": "ClusterName" },{"data":"State"},{"data":"AddedBy"},{ "data": "view" }],
+          "autoWidth": false,
+          "columnDefs": [
+
+                      { "width": "5%", "targets":[0,1,6]},
+                      { "width": "12%", "targets": 3},
+                      { "width": "5%", "targets": 8,"sClass": "text-right","bSortable": false },
+                      ],
+        "fnDrawCallback": function (resp) {
+                                        if(resp._iRecordsTotal == 0)
+                                        {
+                                             jQuery('.emptyRecord').show();
+                                             jQuery('#build-list-div').hide();
+                                       } else { jQuery('#build-list-div').show(); }
+
+                        },
+    } );
+
+    requestTitleArr = ['State','Added By']
+    requestVal = ["{{request.GET.State}}","{{request.GET.AuthorName}}"]
+
+    jQuery('#build-list_filter').html('');
+    jQuery('#build-list tfoot th').each( function () {
+        var title = jQuery(this).text();
+        if (title != 'View')
+        {
+         len = jQuery(this).text().length;
+         if(jQuery.inArray(title,requestTitleArr) !=- 1)
+                  {
+                    if(requestVal[requestTitleArr.indexOf(title)])
+                      jQuery(this).html( '<input id="searchC_'+title+'" type="text" placeholder="'+title+'" value="'+requestVal[requestTitleArr.indexOf(title)]+'"/>');
+                    else
+                      { jQuery(this).html( '<input id="searchC_'+title+'" type="text" placeholder="'+title+'" />' );}
+                  }
+        else{
+        jQuery(this).html( '<input id="search_'+title+'" type="text" placeholder="'+title+'" />' );}
+        }
+    } );
+    // DataTable
+
+    table.columns().every( function () {
+        var that = this;
+        jQuery( 'input', this.footer() ).on( 'keyup change', function () {
+            if ( that.search() !== this.value ) {
+                that
+                    .search( this.value )
+                    .draw();
+            }
+        } );
+    } );
+
+     {% if request.GET.State and  request.GET.AuthorName  %}
+         loadDefault(table,6, '{{request.GET.State}}');
+         loadDefault(table,7, '{{request.GET.AuthorName}}');
+       {% endif %}
+} );
+
+
+</script>
+{% endblock %} 
